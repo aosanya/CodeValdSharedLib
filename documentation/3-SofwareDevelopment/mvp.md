@@ -70,7 +70,7 @@ git branch -d feature/SHAREDLIB-XXX_description
 | ~~SHAREDLIB-003~~ ✅ | CodeValdCross proto-generated code | ✅ Done | ~~SHAREDLIB-001~~ ✅ | Move `.proto` + `gen/go/codevaldcross/v1/` here; single source of truth for all consumers |
 | ~~SHAREDLIB-004~~ ✅ | Generic `registrar` package | ✅ Done | ~~SHAREDLIB-001~~ ✅, ~~SHAREDLIB-003~~ ✅ | Move from `CodeValdGit/internal/registrar/` + `CodeValdWork/internal/registrar/`; caller injects `serviceName`, topics, routes |
 | SHAREDLIB-005 | `serverutil` package | � In Progress | ~~SHAREDLIB-001~~ ✅ | `NewGRPCServer()`, `RunWithGracefulShutdown()`, `EnvOrDefault()`, `ParseDurationSeconds()`, `ParseDurationString()` |
-| SHAREDLIB-006 | `arangoutil` package | 📋 Not Started | ~~SHAREDLIB-001~~ ✅ | `Connect(ctx, Config) (driver.Database, error)` — bootstrap only; each service keeps its own collection logic |
+| SHAREDLIB-006 | `arangoutil` package | � In Progress | ~~SHAREDLIB-001~~ ✅ | `Connect(ctx, Config) (driver.Database, error)` — bootstrap only; each service keeps its own collection logic |
 
 ---
 
