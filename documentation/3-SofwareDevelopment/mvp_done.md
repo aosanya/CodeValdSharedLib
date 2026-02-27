@@ -19,3 +19,9 @@ Tasks that have been merged to `master` are moved here from `mvp.md`.
 | SHAREDLIB-004 | Generic `registrar` package | 2026-02-27 | `registrar/registrar.go`: exported `Registrar` interface, unexported concrete struct; all service-specific values are constructor args; 4 tests pass (`-race`) |
 | SHAREDLIB-005 | `serverutil` package | 2026-02-27 | `serverutil/serverutil.go`: `NewGRPCServer`, `RunWithGracefulShutdown`, `EnvOrDefault`, `ParseDurationSeconds`, `ParseDurationString`; 11 tests pass (`-race`) |
 | SHAREDLIB-006 | `arangoutil` package | 2026-02-27 | `arangoutil/arangoutil.go`: `Config`, `Connect(ctx, Config) driver.Database`; adds `github.com/arangodb/go-driver v1.6.0`; 2 tests pass (`-race`) |
+
+## P2: Consuming Services Migration
+
+| Task ID | Title | Merged | Notes |
+|---|---|---|---|
+| SHAREDLIB-007 | Migrate CodeValdCross | 2026-02-27 | Removed duplicate `PathBinding`, `RouteInfo`, `ServiceRegistration` from `CodeValdCross/models.go`; replaced with type aliases to `CodeValdSharedLib/types`; added `require github.com/aosanya/CodeValdSharedLib v0.0.0` to `go.mod`; build and vet pass (`-race`) |
