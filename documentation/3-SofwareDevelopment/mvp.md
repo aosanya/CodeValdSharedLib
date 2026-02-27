@@ -66,7 +66,7 @@ git branch -d feature/SHAREDLIB-XXX_description
 
 | Task ID | Title | Status | Depends On | Notes |
 |---|---|---|---|---|
-| SHAREDLIB-002 | Shared domain types | 📋 Not Started | ~~SHAREDLIB-001~~ ✅ | `types/types.go`: `PathBinding`, `RouteInfo`, `ServiceRegistration` — moved from `CodeValdCross/models.go` |
+| ~~SHAREDLIB-002~~ ✅ | Shared domain types | ✅ Done | ~~SHAREDLIB-001~~ ✅ | `types/types.go`: `PathBinding`, `RouteInfo`, `ServiceRegistration` — moved from `CodeValdCross/models.go` |
 | SHAREDLIB-003 | CodeValdCross proto-generated code | 📋 Not Started | ~~SHAREDLIB-001~~ ✅ | Move `.proto` + `gen/go/codevaldcross/v1/` here; single source of truth for all consumers |
 | SHAREDLIB-004 | Generic `registrar` package | 📋 Not Started | ~~SHAREDLIB-001~~ ✅, SHAREDLIB-003 | Move from `CodeValdGit/internal/registrar/` + `CodeValdWork/internal/registrar/`; caller injects `serviceName`, topics, routes |
 | SHAREDLIB-005 | `serverutil` package | 📋 Not Started | ~~SHAREDLIB-001~~ ✅ | `NewGRPCServer()`, `RunWithGracefulShutdown()`, `EnvOrDefault()`, `ParseDurationSeconds()`, `ParseDurationString()` |
@@ -78,7 +78,7 @@ git branch -d feature/SHAREDLIB-XXX_description
 
 | Task ID | Title | Status | Depends On | Notes |
 |---|---|---|---|---|
-| SHAREDLIB-007 | Migrate CodeValdCross | 📋 Not Started | SHAREDLIB-002, SHAREDLIB-003 | Import `types.ServiceRegistration`, `types.RouteInfo`, `types.PathBinding` from SharedLib; remove duplicate definitions from `models.go`; update `go.mod` |
+| SHAREDLIB-007 | Migrate CodeValdCross | 📋 Not Started | ~~SHAREDLIB-002~~ ✅, SHAREDLIB-003 | Import `types.ServiceRegistration`, `types.RouteInfo`, `types.PathBinding` from SharedLib; remove duplicate definitions from `models.go`; update `go.mod` |
 | SHAREDLIB-008 | Migrate CodeValdGit | 📋 Not Started | SHAREDLIB-003, SHAREDLIB-004, SHAREDLIB-005, SHAREDLIB-006 | Replace `internal/registrar/` with `registrar`; replace `cmd/server/main.go` helpers with `serverutil`; replace ArangoDB bootstrap in `storage/arangodb/` with `arangoutil.Connect`; import Cross gen from SharedLib |
 | SHAREDLIB-009 | Migrate CodeValdWork | 📋 Not Started | SHAREDLIB-003, SHAREDLIB-004, SHAREDLIB-005, SHAREDLIB-006 | Same scope as SHAREDLIB-008 for CodeValdWork |
 
