@@ -58,7 +58,7 @@ git branch -d feature/SHAREDLIB-XXX_description
 
 | Task ID | Title | Status | Depends On | Notes |
 |---|---|---|---|---|
-| SHAREDLIB-001 | Go module init | 📋 Not Started | — | `go mod init github.com/aosanya/CodeValdSharedLib`; add `replace` directives in all consuming services |
+| ~~SHAREDLIB-001~~ ✅ | Go module init | ✅ Done | — | `go mod init github.com/aosanya/CodeValdSharedLib`; add `replace` directives in all consuming services |
 
 ---
 
@@ -66,11 +66,11 @@ git branch -d feature/SHAREDLIB-XXX_description
 
 | Task ID | Title | Status | Depends On | Notes |
 |---|---|---|---|---|
-| SHAREDLIB-002 | Shared domain types | 📋 Not Started | SHAREDLIB-001 | `types/types.go`: `PathBinding`, `RouteInfo`, `ServiceRegistration` — moved from `CodeValdCross/models.go` |
-| SHAREDLIB-003 | CodeValdCross proto-generated code | 📋 Not Started | SHAREDLIB-001 | Move `.proto` + `gen/go/codevaldcross/v1/` here; single source of truth for all consumers |
-| SHAREDLIB-004 | Generic `registrar` package | 📋 Not Started | SHAREDLIB-001, SHAREDLIB-003 | Move from `CodeValdGit/internal/registrar/` + `CodeValdWork/internal/registrar/`; caller injects `serviceName`, topics, routes |
-| SHAREDLIB-005 | `serverutil` package | 📋 Not Started | SHAREDLIB-001 | `NewGRPCServer()`, `RunWithGracefulShutdown()`, `EnvOrDefault()`, `ParseDurationSeconds()`, `ParseDurationString()` |
-| SHAREDLIB-006 | `arangoutil` package | 📋 Not Started | SHAREDLIB-001 | `Connect(ctx, Config) (driver.Database, error)` — bootstrap only; each service keeps its own collection logic |
+| SHAREDLIB-002 | Shared domain types | 📋 Not Started | ~~SHAREDLIB-001~~ ✅ | `types/types.go`: `PathBinding`, `RouteInfo`, `ServiceRegistration` — moved from `CodeValdCross/models.go` |
+| SHAREDLIB-003 | CodeValdCross proto-generated code | 📋 Not Started | ~~SHAREDLIB-001~~ ✅ | Move `.proto` + `gen/go/codevaldcross/v1/` here; single source of truth for all consumers |
+| SHAREDLIB-004 | Generic `registrar` package | 📋 Not Started | ~~SHAREDLIB-001~~ ✅, SHAREDLIB-003 | Move from `CodeValdGit/internal/registrar/` + `CodeValdWork/internal/registrar/`; caller injects `serviceName`, topics, routes |
+| SHAREDLIB-005 | `serverutil` package | 📋 Not Started | ~~SHAREDLIB-001~~ ✅ | `NewGRPCServer()`, `RunWithGracefulShutdown()`, `EnvOrDefault()`, `ParseDurationSeconds()`, `ParseDurationString()` |
+| SHAREDLIB-006 | `arangoutil` package | 📋 Not Started | ~~SHAREDLIB-001~~ ✅ | `Connect(ctx, Config) (driver.Database, error)` — bootstrap only; each service keeps its own collection logic |
 
 ---
 
