@@ -16,3 +16,4 @@ Tasks that have been merged to `master` are moved here from `mvp.md`.
 | Task ID | Title | Merged | Notes |
 |---|---|---|---|
 | SHAREDLIB-003 | CodeValdCross proto-generated code | 2026-02-27 | `proto/codevaldcross/v1/registration.proto` + `gen/go/codevaldcross/v1/`; `buf.yaml`/`buf.gen.yaml` added; `go_package` updated to SharedLib import path |
+| SHAREDLIB-004 | Generic `registrar` package | 2026-02-27 | `registrar/registrar.go`: exported `Registrar` interface, unexported concrete struct; all service-specific values are constructor args; 4 tests pass (`-race`) |
