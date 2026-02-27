@@ -79,8 +79,8 @@ git branch -d feature/SHAREDLIB-XXX_description
 | Task ID | Title | Status | Depends On | Notes |
 |---|---|---|---|---|
 | SHAREDLIB-007 | Migrate CodeValdCross | 📋 Not Started | ~~SHAREDLIB-002~~ ✅, ~~SHAREDLIB-003~~ ✅ | Import `types.ServiceRegistration`, `types.RouteInfo`, `types.PathBinding` from SharedLib; remove duplicate definitions from `models.go`; update `go.mod` |
-| SHAREDLIB-008 | Migrate CodeValdGit | 📋 Not Started | ~~SHAREDLIB-003~~ ✅, ~~SHAREDLIB-004~~ ✅, SHAREDLIB-005, SHAREDLIB-006 | Replace `internal/registrar/` with `registrar`; replace `cmd/server/main.go` helpers with `serverutil`; replace ArangoDB bootstrap in `storage/arangodb/` with `arangoutil.Connect`; import Cross gen from SharedLib |
-| SHAREDLIB-009 | Migrate CodeValdWork | 📋 Not Started | ~~SHAREDLIB-003~~ ✅, ~~SHAREDLIB-004~~ ✅, SHAREDLIB-005, SHAREDLIB-006 | Same scope as SHAREDLIB-008 for CodeValdWork |
+| SHAREDLIB-008 | Migrate CodeValdGit | 📋 Not Started | ~~SHAREDLIB-003~~ ✅, ~~SHAREDLIB-004~~ ✅, ~~SHAREDLIB-005~~ ✅, SHAREDLIB-006 | Replace `internal/registrar/` with `registrar`; replace `cmd/server/main.go` helpers with `serverutil`; replace ArangoDB bootstrap in `storage/arangodb/` with `arangoutil.Connect`; import Cross gen from SharedLib |
+| SHAREDLIB-009 | Migrate CodeValdWork | 📋 Not Started | ~~SHAREDLIB-003~~ ✅, ~~SHAREDLIB-004~~ ✅, ~~SHAREDLIB-005~~ ✅, SHAREDLIB-006 | Same scope as SHAREDLIB-008 for CodeValdWork |
 
 ---
 
