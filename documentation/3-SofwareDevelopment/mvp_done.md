@@ -25,3 +25,4 @@ Tasks that have been merged to `master` are moved here from `mvp.md`.
 | Task ID | Title | Merged | Notes |
 |---|---|---|---|
 | SHAREDLIB-007 | Migrate CodeValdCross | 2026-02-27 | Removed duplicate `PathBinding`, `RouteInfo`, `ServiceRegistration` from `CodeValdCross/models.go`; replaced with type aliases to `CodeValdSharedLib/types`; added `require github.com/aosanya/CodeValdSharedLib v0.0.0` to `go.mod`; build and vet pass (`-race`) |
+| SHAREDLIB-008 | Migrate CodeValdGit | 2026-03-01 | `cmd/main.go` and `cmd/server/main.go` use `sharedregistrar`, `serverutil`, SharedLib's `crossv1` gen; `storage/arangodb` uses `arangoutil.Connect`; removed dead `cmd/cross.go`, local `gen/go/codevaldcross/`, `proto/codevaldcross/`, and empty `internal/registrar/`; all tests pass (`-race`) |
