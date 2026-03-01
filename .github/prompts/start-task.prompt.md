@@ -4,6 +4,8 @@ agent: agent
 
 # Start New Task
 
+> ⚠️ **Before starting a new task**, run `CodeValdSharedLib/.github/prompts/finish-task.prompt.md` to ensure any in-progress task is properly completed and merged first.
+
 Follow the **mandatory task startup process** for CodeValdSharedLib tasks:
 
 ## Task Startup Process (MANDATORY)
