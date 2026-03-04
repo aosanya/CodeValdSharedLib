@@ -70,6 +70,17 @@ func EnvOrDefault(key, def string) string {
 	return def
 }
 
+// MustGetEnv returns os.Getenv(key), or panics with a helpful message if the
+// variable is unset or empty. Use for required configuration that must be
+// present before the service can start.
+func MustGetEnv(key string) string {
+	v := os.Getenv(key)
+	if v == "" {
+		log.Fatalf("%s must be set", key)
+	}
+	return v
+}
+
 // ParseDurationSeconds reads key from the environment as a positive integer
 // number of seconds (e.g. "30" → 30s). Falls back to def when the variable is
 // unset, empty, zero, or not a valid positive integer.
