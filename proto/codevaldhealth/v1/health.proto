@@ -1,0 +1,47 @@
+syntax = "proto3";
+
+package codevaldhealth.v1;
+
+option go_package = "github.com/aosanya/CodeValdSharedLib/gen/go/codevaldhealth/v1;codevaldhealth";
+
+// HealthService is the standard liveness probe interface implemented by every
+// CodeVald microservice. CodeValdCross calls Check periodically to determine
+// whether a registered service is still alive and ready to handle requests.
+//
+// The response is intentionally extensible — services surface additional
+// operational data (load, queue depth, version, etc.) via the metadata map
+// without requiring a proto schema change.
+service HealthService {
+  // Check returns the current health status of the service.
+  // A successful RPC (any ServingStatus) means the service is reachable.
+  // A failed RPC (deadline exceeded, connection refused, etc.) means it is not.
+  rpc Check(HealthCheckRequest) returns (HealthCheckResponse);
+}
+
+// ServingStatus mirrors the gRPC health-check convention for interoperability.
+enum ServingStatus {
+  SERVING_STATUS_UNSPECIFIED = 0;
+  SERVING_STATUS_SERVING     = 1;
+  SERVING_STATUS_NOT_SERVING = 2;
+}
+
+// HealthCheckRequest is intentionally empty for now.
+// Reserved for future filtering (e.g. probe a specific sub-component).
+message HealthCheckRequest {}
+
+// HealthCheckResponse carries health metadata.
+// All fields except status are optional — services populate what is useful.
+message HealthCheckResponse {
+  // status indicates whether the service is ready to handle requests.
+  ServingStatus status = 1;
+
+  // service_name echoes the service's own identifier (e.g. "codevaldgit").
+  string service_name = 2;
+
+  // uptime_seconds is how many seconds the service process has been running.
+  int64 uptime_seconds = 3;
+
+  // metadata is a free-form extension point. Services may populate arbitrary
+  // key/value pairs here (e.g. "queue_depth": "42", "version": "1.2.3").
+  map<string, string> metadata = 4;
+}
