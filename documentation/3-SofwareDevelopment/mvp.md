@@ -84,6 +84,14 @@ git branch -d feature/SHAREDLIB-XXX_description
 
 ---
 
+## P3: Entity-Graph Infrastructure
+
+| Task ID | Title | Status | Depends On | Notes |
+|---|---|---|---|---|
+| SHAREDLIB-010 | `entitygraph` package | 🚀 In Progress | ~~SHAREDLIB-001~~ ✅ | `entitygraph/entitygraph.go`: `DataManager` + `SchemaManager` interfaces and all associated models (`Entity`, `Relationship`, `CreateEntityRequest`, `UpdateEntityRequest`, `EntityFilter`, `CreateRelationshipRequest`, `RelationshipFilter`, `TraverseGraphRequest`, `TraverseGraphResult`). ArangoDB-backed concrete implementation. Already consumed by CodeValdDT and CodeValdComm (architecturally defined); now being materialised as Go code for CodeValdAgency refactor. |
+
+---
+
 ## Success Criteria
 
 - `go build ./...` passes in CodeValdSharedLib, CodeValdCross, CodeValdGit, and CodeValdWork
@@ -92,3 +100,4 @@ git branch -d feature/SHAREDLIB-XXX_description
 - No service carries its own copy of `gen/go/codevaldcross/v1/`
 - `PathBinding`, `RouteInfo`, `ServiceRegistration` are defined exactly once in `CodeValdSharedLib/types/`
 - `CodeValdSharedLib` does not import from any CodeVald service
+- `entitygraph.DataManager` and `entitygraph.SchemaManager` are defined in SharedLib and importable by CodeValdDT, CodeValdComm, and CodeValdAgency
