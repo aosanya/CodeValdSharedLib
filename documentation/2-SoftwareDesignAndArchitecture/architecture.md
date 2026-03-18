@@ -160,6 +160,55 @@ needs to introspect the registry (e.g. CodeValdAgency) imports from here.
 
 ---
 
+### `entitygraph` — Entity-Graph Data Manager & Schema Manager
+
+Generic interfaces and models for any CodeVald service that owns a typed,
+graph-structured entity store backed by a versioned schema.
+
+Currently consumed by **CodeValdDT** (digital twins) and **CodeValdComm**
+(messages/notifications). Both services alias these interfaces locally and
+supply their own ArangoDB-backed implementations via constructor injection.
+
+```go
+// DataManager is the business-logic entry point for entity lifecycle and graph
+// operations. Consumers alias this as their own service-scoped interface
+// (e.g. DTDataManager = entitygraph.DataManager).
+// Schema operations are not in scope — see SchemaManager.
+// Immutable types (TypeDefinition.Immutable == true) reject UpdateEntity with
+// ErrImmutableType. Storage routing is driven by TypeDefinition.StorageCollection.
+type DataManager interface {
+    // Entity operations
+    CreateEntity(ctx context.Context, req CreateEntityRequest) (Entity, error)
+    GetEntity(ctx context.Context, agencyID, entityID string) (Entity, error)
+    UpdateEntity(ctx context.Context, agencyID, entityID string, req UpdateEntityRequest) (Entity, error)
+    DeleteEntity(ctx context.Context, agencyID, entityID string) error
+    ListEntities(ctx context.Context, filter EntityFilter) ([]Entity, error)
+
+    // Graph operations
+    CreateRelationship(ctx context.Context, req CreateRelationshipRequest) (Relationship, error)
+    GetRelationship(ctx context.Context, agencyID, relationshipID string) (Relationship, error)
+    DeleteRelationship(ctx context.Context, agencyID, relationshipID string) error
+    ListRelationships(ctx context.Context, filter RelationshipFilter) ([]Relationship, error)
+    TraverseGraph(ctx context.Context, req TraverseGraphRequest) (TraverseGraphResult, error)
+}
+
+// SchemaManager is the schema storage contract injected into a concrete DataManager
+// implementation. It owns read and write access to the service's schema
+// collection (e.g. dt_schemas, comm_schemas).
+type SchemaManager interface {
+    SetSchema(ctx context.Context, schema types.Schema) error
+    GetSchema(ctx context.Context, agencyID string, version int) (types.Schema, error)
+    ListSchemaVersions(ctx context.Context, agencyID string) ([]types.Schema, error)
+}
+```
+
+All associated models (`Entity`, `Relationship`, `CreateEntityRequest`,
+`UpdateEntityRequest`, `EntityFilter`, `CreateRelationshipRequest`,
+`RelationshipFilter`, `TraverseGraphRequest`, `TraverseGraphResult`) are defined
+in this package and imported by both services.
+
+---
+
 ## 3. Package Layout
 
 ```
@@ -173,7 +222,10 @@ github.com/aosanya/CodeValdSharedLib/
 ├── arangoutil/
 │   └── arangoutil.go         ← Connect(ctx, Config) driver.Database
 ├── types/
-│   └── types.go              ← PathBinding, RouteInfo, ServiceRegistration
+│   ├── types.go              ← PathBinding, RouteInfo, ServiceRegistration
+│   └── schema.go             ← PropertyType, TypeDefinition, Schema, …
+├── entitygraph/
+│   └── entitygraph.go        ← DataManager, SchemaManager interfaces + all models
 ├── proto/
 │   └── codevaldcross/
 │       └── v1/
@@ -192,9 +244,11 @@ github.com/aosanya/CodeValdSharedLib/
 
 ```
 CodeValdCross   ─┐
-CodeValdGit     ─┼──► CodeValdSharedLib   (no reverse dependency)
-CodeValdWork    ─┘
-CodeValdAgency  ─┘  (future)
+CodeValdGit     ─┼
+CodeValdWork    ─┼
+CodeValdAgency  ─┼──► CodeValdSharedLib   (no reverse dependency)
+CodeValdDT      ─┼
+CodeValdComm    ─┘
 ```
 
 - **CodeValdSharedLib must never import from any CodeVald service.**
@@ -228,5 +282,5 @@ replace github.com/aosanya/CodeValdSharedLib => ../CodeValdSharedLib
 | Domain errors (`ErrTaskNotFound`, `ErrRepoNotFound`) | Each service's `errors.go` | Tightly coupled to service-specific types |
 | gRPC service handlers (`internal/grpcserver/`) | Each service | Domain-specific request/response mapping |
 | Storage collection schemas | Each service's `storage/arangodb/` | Schema is service-specific |
-| `Message`, `Topic`, `FileEntry` | `CodeValdCross/models.go` | Only used inside Cross today; move here if a second consumer appears |
 | Proto definitions for each service | Each service's `proto/` | Service-owned contracts |
+| `Message`, `Topic`, `FileEntry` | `CodeValdCross/models.go` | Only used inside Cross today; move here if a second consumer appears |

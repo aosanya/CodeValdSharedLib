@@ -90,11 +90,23 @@ type TypeDefinition struct {
 	// Name is the unique type identifier within the Schema (e.g. "Pump").
 	Name string
 
-	// Description provides human-readable context for this type.
-	Description string
+	// DisplayName is a human-readable label for this type (e.g. "Water Pump").
+	DisplayName string
 
 	// Properties is the ordered list of property definitions for this type.
 	Properties []PropertyDefinition
+
+	// StorageCollection is the backing ArangoDB collection for instances of this
+	// type. If empty, the service default is used (e.g. "dt_entities" for
+	// CodeValdDT). Set to "dt_telemetry" or "dt_events" to route writes to a
+	// specialised collection.
+	StorageCollection string
+
+	// Immutable indicates that instances of this type cannot be updated after
+	// creation. UpdateEntity returns [ErrImmutableType] when called on an entity
+	// whose TypeDefinition has Immutable set to true. Only CreateEntity and
+	// DeleteEntity are valid for immutable types.
+	Immutable bool
 }
 
 // Schema is a versioned, immutable collection of [TypeDefinition]s for one
