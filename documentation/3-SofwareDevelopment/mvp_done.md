@@ -27,3 +27,9 @@ Tasks that have been merged to `master` are moved here from `mvp.md`.
 | SHAREDLIB-007 | Migrate CodeValdCross | 2026-02-27 | Removed duplicate `PathBinding`, `RouteInfo`, `ServiceRegistration` from `CodeValdCross/models.go`; replaced with type aliases to `CodeValdSharedLib/types`; added `require github.com/aosanya/CodeValdSharedLib v0.0.0` to `go.mod`; build and vet pass (`-race`) |
 | SHAREDLIB-008 | Migrate CodeValdGit | 2026-03-01 | `cmd/main.go` and `cmd/server/main.go` use `sharedregistrar`, `serverutil`, SharedLib's `crossv1` gen; `storage/arangodb` uses `arangoutil.Connect`; removed dead `cmd/cross.go`, local `gen/go/codevaldcross/`, `proto/codevaldcross/`, and empty `internal/registrar/`; all tests pass (`-race`) |
 | SHAREDLIB-009 | Migrate CodeValdWork | 2026-03-01 | Added `require CodeValdSharedLib` to `go.mod`; rewrote `cmd/server/main.go` to use `serverutil.NewGRPCServer`, `RunWithGracefulShutdown`, `EnvOrDefault`, `ParseDurationString`, and `sharedregistrar.New`; replaced `storage/arangodb` bootstrap with `arangoutil.Connect`; removed local `internal/registrar/`, `gen/go/codevaldcross/`, `proto/codevaldcross/`; all tests pass (`-race`) |
+
+## P3: Entity-Graph Infrastructure
+
+| Task ID | Title | Merged | Notes |
+|---|---|---|---|
+| SHAREDLIB-010 | `entitygraph` package | 2026-03-18 | `entitygraph/entitygraph.go`: `DataManager` + `SchemaManager` interfaces; `Entity`, `Relationship`, `CreateEntityRequest`, `UpdateEntityRequest`, `EntityFilter`, `CreateRelationshipRequest`, `RelationshipFilter`, `TraverseGraphRequest`, `TraverseGraphResult` models; all existing tests pass (`-race`); importable by CodeValdDT, CodeValdComm, and CodeValdAgency |
