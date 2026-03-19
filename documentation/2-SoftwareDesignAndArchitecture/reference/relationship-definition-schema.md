@@ -94,18 +94,23 @@ type RelationshipDefinition struct {
 
 ### 3.2 Updated `TypeDefinition`
 
-One field added:
+Two fields added:
 
 ```go
 type TypeDefinition struct {
     Name              string
     DisplayName       string
+    PathSegment       string                   // URL segment for schema-driven routes, e.g. "goal-templates"
     Properties        []PropertyDefinition
     Relationships     []RelationshipDefinition  // ← NEW
     StorageCollection string
     Immutable         bool
 }
 ```
+
+`PathSegment` is used by the registrar's `GetActive`-driven route generator
+(see [schema-versioning.md](schema-versioning.md)). If empty, the type will not
+be represented in the generated route set.
 
 ---
 
