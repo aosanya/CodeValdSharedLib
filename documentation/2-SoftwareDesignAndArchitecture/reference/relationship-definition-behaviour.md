@@ -94,10 +94,14 @@ func ValidateCreateRelationship(fromTypeDef types.TypeDefinition, label, toTypeI
 //
 // Rules enforced:
 //  1. All TypeDefinition.Name values are unique within the schema.
-//  2. For every RelationshipDefinition where Inverse != "":
+//  2. All TypeDefinition.PathSegment values are unique within the schema
+//     (non-empty segments only).
+//  3. For every RelationshipDefinition where Inverse != "":
 //     a. ToType must reference a TypeDefinition.Name in the same schema.
 //     b. The ToType's TypeDefinition must declare a RelationshipDefinition
 //        with Name == rd.Inverse.
+//  4. Within each TypeDefinition, all RelationshipDefinition.PathSegment
+//     values are unique (non-empty segments only).
 //
 // Returns a descriptive error on the first violation found.
 func ValidateSchema(schema types.Schema) error
@@ -256,6 +260,14 @@ FOR v, e, p IN 1..@depth OUTBOUND CONCAT('agency_entities/', @startID)
 The filter applies in both directions when `Direction = "any"`. When `Names` is
 non-empty, only edges whose label is in the list are followed — vertices
 reachable exclusively through non-listed edges are not included.
+
+### 5.1 Edge direction in results
+
+`TraverseGraphResult.Edges` returns edges in their **raw ArangoDB storage
+direction**. `FromID` and `ToID` always reflect how the edge is stored —
+they are never swapped to match traversal direction. When `Direction =
+"inbound"`, edges pointing toward the start entity will have
+`ToID == StartID`. Callers interpret directionality from context.
 
 ---
 

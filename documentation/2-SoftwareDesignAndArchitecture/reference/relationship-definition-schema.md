@@ -89,6 +89,11 @@ type RelationshipDefinition struct {
     // both the forward and inverse edges in a single transaction.
     // ValidateSchema enforces that the named inverse definition exists on ToType.
     Inverse string
+
+    // PathSegment is the URL sub-resource segment used in schema-driven HTTP
+    // routes (e.g. "workflows" → /v2/{agencyID}/goals/{id}/workflows).
+    // If empty, no sub-resource routes are generated for this relationship.
+    PathSegment string
 }
 ```
 

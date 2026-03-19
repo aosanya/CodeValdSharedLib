@@ -51,6 +51,8 @@ type SchemaManager interface {
     // Publish snapshots the current draft into schemas_published as a new
     // version with Active = false. The version number is auto-assigned
     // (highest existing version + 1).
+    // Runs ValidateSchema on the draft before snapshotting — returns an error
+    // and creates no snapshot if validation fails.
     Publish(ctx context.Context, agencyID string) error
 
     // Activate promotes the given version to active, setting Active = true on
@@ -124,8 +126,8 @@ A `TypeDefinition` with a non-empty `PathSegment` produces six routes:
 | `PATCH` | `/v{ver}/{agencyID}/{pathSegment}/{id}` | `UpdateEntity` |
 | `DELETE` | `/v{ver}/{agencyID}/{pathSegment}/{id}` | `DeleteEntity` |
 
-Each `RelationshipDefinition` on that type adds three sub-resource routes
-(pending Q26 — `PathSegment` field on `RelationshipDefinition`):
+Each `RelationshipDefinition` on that type with a non-empty `PathSegment` adds
+three sub-resource routes:
 
 | Method | Pattern | Maps to |
 |---|---|---|
@@ -145,10 +147,28 @@ serve traffic simultaneously during migration.
 
 ### 5.3 Route generation trigger
 
-The registrar heartbeat (every 20 s) calls `GetActive` and derives the route
-set on every tick. `Activate` only flips the DB pointer — no explicit
-re-registration call is required. The new routes go live within one heartbeat
-cycle of activation.
+The registrar heartbeat (every 20 s) calls `ListAgencies` then `GetActive` for
+each agency to derive the complete route set. The merged list from all agencies
+is sent in a single `RegisterRequest` to CodeValdCross. `Activate` only flips
+the DB pointer — the new routes go live within one heartbeat cycle. Agencies
+with no active schema contribute zero routes.
+
+### 5.4 Inverse relationship routes
+
+An inverse `RelationshipDefinition.PathSegment` is independent — the schema
+author controls whether the back-link gets a sub-resource route by setting or
+leaving empty `PathSegment`. There is no automatic suppression of inverse
+routes.
+
+Example: `Goal.belongs_to_agency` with `PathSegment: "agency"` generates:
+
+```
+GET  /v1/{agencyID}/goals/{id}/agency   → ListRelationships(name=belongs_to_agency)
+POST /v1/{agencyID}/goals/{id}/agency   → CreateRelationship(name=belongs_to_agency)
+```
+
+Leaving `PathSegment: ""` on `belongs_to_agency` suppresses these routes
+entirely.
 
 ---
 
@@ -172,6 +192,29 @@ Rules:
 - If empty, the type is **not** represented in the generated route set
 - Changing `PathSegment` in a new schema version changes the URL — old routes
   for the old version remain live until that version is deactivated
+
+---
+
+## 7. `RelationshipDefinition.PathSegment`
+
+```go
+type RelationshipDefinition struct {
+    Name        string
+    Label       string
+    ToType      string
+    ToMany      bool
+    Required    bool
+    Inverse     string
+    PathSegment string   // sub-resource URL segment, e.g. "workflows"
+}
+```
+
+Rules:
+- Must be lowercase, hyphen-separated
+- Must be unique within the owning `TypeDefinition`
+- If empty, no sub-resource routes are generated for this relationship
+- `{relSeg}` in the route pattern comes from this field, e.g.:
+  `POST /v2/agency-abc/goals/{id}/workflows`
 
 ---
 

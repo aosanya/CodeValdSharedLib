@@ -23,6 +23,7 @@ func DefaultAgencySchema() types.Schema {
             {
                 Name:        "Agency",
                 DisplayName: "Agency",
+                PathSegment: "", // no routes — Agency IS the agency context
                 Properties: []types.PropertyDefinition{
                     {Name: "name",    Type: types.PropertyTypeString, Required: true},
                     {Name: "mission", Type: types.PropertyTypeString, Required: false},
@@ -30,41 +31,44 @@ func DefaultAgencySchema() types.Schema {
                     {Name: "status",  Type: types.PropertyTypeString, Required: true},
                 },
                 Relationships: []types.RelationshipDefinition{
-                    {Name: "has_goal",           Label: "Goals",            ToType: "Goal",              ToMany: true},
-                    {Name: "has_workflow",        Label: "Workflows",        ToType: "Workflow",          ToMany: true},
-                    {Name: "has_configured_role", Label: "Configured Roles", ToType: "ConfiguredRole",   ToMany: true},
-                    {Name: "has_snapshot",        Label: "Snapshots",        ToType: "AgencySnapshot",   ToMany: true},
-                    {Name: "has_publication",     Label: "Publications",     ToType: "AgencyPublication", ToMany: true},
+                    {Name: "has_goal",           Label: "Goals",            PathSegment: "goals",            ToType: "Goal",              ToMany: true,  Inverse: "belongs_to_agency"},
+                    {Name: "has_workflow",        Label: "Workflows",        PathSegment: "workflows",        ToType: "Workflow",          ToMany: true,  Inverse: "belongs_to_agency"},
+                    {Name: "has_configured_role", Label: "Configured Roles", PathSegment: "configured-roles", ToType: "ConfiguredRole",    ToMany: true},
+                    {Name: "has_snapshot",        Label: "Snapshots",        PathSegment: "snapshots",        ToType: "AgencySnapshot",    ToMany: true},
+                    {Name: "has_publication",     Label: "Publications",     PathSegment: "publications",     ToType: "AgencyPublication", ToMany: true},
                 },
             },
             {
                 Name:        "Goal",
                 DisplayName: "Goal",
+                PathSegment: "goals",
                 Properties: []types.PropertyDefinition{
                     {Name: "title",       Type: types.PropertyTypeString,  Required: true},
                     {Name: "description", Type: types.PropertyTypeString,  Required: false},
                     {Name: "ordinality",  Type: types.PropertyTypeInteger, Required: true},
                 },
                 Relationships: []types.RelationshipDefinition{
-                    // ToMany=false: a Goal belongs to exactly one Agency.
-                    // CreateRelationship upserts — replacing any prior edge.
-                    {Name: "belongs_to_agency", Label: "Agency", ToType: "Agency", ToMany: false},
+                    // ToMany=false: a Goal belongs to exactly one Agency (upsert).
+                    // Inverse of Agency.has_goal — auto-created by CreateRelationship.
+                    {Name: "belongs_to_agency", Label: "Agency", PathSegment: "agency", ToType: "Agency", ToMany: false},
                 },
             },
             {
                 Name:        "Workflow",
                 DisplayName: "Workflow",
+                PathSegment: "workflows",
                 Properties: []types.PropertyDefinition{
                     {Name: "name", Type: types.PropertyTypeString, Required: true},
                 },
                 Relationships: []types.RelationshipDefinition{
-                    {Name: "has_work_item",     Label: "Work Items", ToType: "WorkItem", ToMany: true},
-                    {Name: "belongs_to_agency", Label: "Agency",     ToType: "Agency",   ToMany: false},
+                    {Name: "has_work_item",     Label: "Work Items", PathSegment: "work-items", ToType: "WorkItem", ToMany: true},
+                    {Name: "belongs_to_agency", Label: "Agency",     PathSegment: "agency",     ToType: "Agency",   ToMany: false},
                 },
             },
             {
                 Name:        "WorkItem",
                 DisplayName: "Work Item",
+                PathSegment: "work-items",
                 Properties: []types.PropertyDefinition{
                     {Name: "title",       Type: types.PropertyTypeString,  Required: true},
                     {Name: "description", Type: types.PropertyTypeString,  Required: false},
@@ -75,6 +79,7 @@ func DefaultAgencySchema() types.Schema {
             {
                 Name:        "ConfiguredRole",
                 DisplayName: "Configured Role",
+                PathSegment: "configured-roles",
                 Properties: []types.PropertyDefinition{
                     {Name: "name",       Type: types.PropertyTypeString, Required: true},
                     {Name: "actor_type", Type: types.PropertyTypeString, Required: true},
@@ -83,6 +88,7 @@ func DefaultAgencySchema() types.Schema {
             {
                 Name:              "AgencySnapshot",
                 DisplayName:       "Agency Snapshot",
+                PathSegment:       "snapshots",
                 Immutable:         true,
                 StorageCollection: "agency_snapshots",
                 Properties: []types.PropertyDefinition{
@@ -92,6 +98,7 @@ func DefaultAgencySchema() types.Schema {
             {
                 Name:              "AgencyPublication",
                 DisplayName:       "Agency Publication",
+                PathSegment:       "publications",
                 Immutable:         true,
                 StorageCollection: "agency_publications",
                 Properties: []types.PropertyDefinition{

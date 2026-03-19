@@ -57,6 +57,13 @@ limit.
 | Q23 | `SetSchema` stores inactive draft; `Activate` is the explicit promotion step |
 | Q24 | `Activate` owns DB flip only; registrar calls `GetActive` on each heartbeat cycle to derive and re-register routes — no explicit trigger needed |
 | Q25 | `TypeDefinition.PathSegment string` — schema author sets the URL segment explicitly (e.g. `"goal-templates"`); `GetActive` uses it as-is for route generation |
+| Q26 | `RelationshipDefinition.PathSegment string` — same pattern; schema author sets sub-resource segment explicitly (e.g. `"workflows"`); empty = no sub-resource routes generated |
+| Q27 | `ValidateSchema` enforces `PathSegment` uniqueness — across all `TypeDefinition` entries and within each `TypeDefinition`'s `RelationshipDefinition` entries |
+| H1 | `Publish` also runs `ValidateSchema` before snapshotting — invalid draft returns error, no snapshot created |
+| H2 | `DefaultAgencySchema` updated with `PathSegment` on all `TypeDefinition` and `RelationshipDefinition` entries; `Agency.PathSegment` left empty (no routes — it is the agency context); `Inverse` added to `has_goal` and `has_workflow` |
+| H3 | Inverse `RelationshipDefinition.PathSegment` is independent — author controls whether the back-link gets a route; empty suppresses it |
+| H4 | `TraverseGraph` returns edges in raw ArangoDB storage direction; `FromID`/`ToID` are not flipped for inbound traversal |
+| H5 | On each heartbeat tick, registrar calls `ListAgencies` + `GetActive` for each, derives all routes across all agencies, and sends one `RegisterRequest` with the merged route list |
 
 ---
 
