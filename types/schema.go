@@ -80,6 +80,47 @@ type PropertyDefinition struct {
 	RatingConfig *RatingConfig
 }
 
+// RelationshipDefinition declares a legal directed edge from the owning
+// [TypeDefinition] to another type within the same [Schema].
+//
+// In OWL terms this is an ObjectProperty with a fixed rdfs:domain (the owning
+// TypeDefinition) and rdfs:range (ToType). At the storage level each
+// RelationshipDefinition corresponds to an ArangoDB edge label within the
+// service's named graph.
+//
+// Validation rules applied by [DataManager.CreateRelationship]:
+//   - The edge label must match a RelationshipDefinition.Name on the source entity's TypeDefinition.
+//   - The target entity's TypeID must equal ToType.
+//   - If ToMany is false, a second edge with the same label from the same source returns ErrRelationshipCardinalityViolation.
+type RelationshipDefinition struct {
+	// Name is the edge label stored in the ArangoDB edge collection
+	// (e.g. "has_goal", "has_work_item"). Must be unique within the
+	// owning TypeDefinition.
+	Name string
+
+	// Label is the human-readable display name (e.g. "Goals").
+	Label string
+
+	// ToType is the TypeDefinition.Name of the target entity class
+	// (e.g. "Goal"). Must reference a type declared in the same Schema.
+	ToType string
+
+	// ToMany controls cardinality.
+	//   false → at most one target entity (functional; owl:maxCardinality 1)
+	//   true  → zero or more targets (collection; unbounded)
+	ToMany bool
+
+	// Required indicates that at least one edge of this label must exist on
+	// every entity of the owning type (owl:minCardinality 1 when true).
+	Required bool
+
+	// Inverse is the optional name of the reciprocal relationship label on the
+	// ToType (e.g. "belongs_to_agency"). If set, DataManager implementations
+	// may use this to auto-create the inverse edge; behaviour is
+	// implementation-defined and not enforced by the schema layer.
+	Inverse string
+}
+
 // TypeDefinition declares a named class of entity within a [Schema].
 //
 // In the Digital Twin service a type is a real-world entity class
@@ -95,6 +136,14 @@ type TypeDefinition struct {
 
 	// Properties is the ordered list of property definitions for this type.
 	Properties []PropertyDefinition
+
+	// Relationships is the ordered list of relationship definitions for this
+	// type. Each entry declares a legal directed edge (ObjectProperty) this
+	// type may form to another type in the same Schema.
+	// An empty slice means this type has no declared outbound relationships;
+	// the DataManager will reject any CreateRelationship call whose label is
+	// not listed here.
+	Relationships []RelationshipDefinition
 
 	// StorageCollection is the backing ArangoDB collection for instances of this
 	// type. If empty, the service default is used (e.g. "dt_entities" for

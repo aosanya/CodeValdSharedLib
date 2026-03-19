@@ -15,10 +15,27 @@ package entitygraph
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"time"
 
 	"github.com/aosanya/CodeValdSharedLib/types"
 )
+
+// ErrInvalidRelationship is returned by CreateRelationship when the edge label
+// is not declared in the source TypeDefinition.Relationships, or when the
+// target entity's TypeID does not match RelationshipDefinition.ToType.
+var ErrInvalidRelationship = errors.New("invalid relationship")
+
+// ErrRelationshipCardinalityViolation is returned by CreateRelationship when
+// a second edge with the same label is created from the same source entity and
+// RelationshipDefinition.ToMany is false (functional / at-most-one).
+var ErrRelationshipCardinalityViolation = errors.New("relationship cardinality violation")
+
+// ErrRequiredRelationshipViolation is returned when an operation (e.g.
+// DeleteEntity) would leave an entity without at least one edge for a
+// relationship declared with Required = true.
+var ErrRequiredRelationshipViolation = errors.New("required relationship violation")
 
 // DataManager is the business-logic entry point for entity lifecycle and graph
 // operations. Consumers alias this as their own service-scoped interface
@@ -251,4 +268,41 @@ type TraverseGraphResult struct {
 
 	// Edges are the traversed relationships in order of discovery.
 	Edges []Relationship
+}
+
+// FindTypeDef returns the [types.TypeDefinition] for the given typeName within
+// the schema, or an error if no matching type exists.
+//
+// This helper is intended for use by DataManager implementations that need to
+// look up the definition of an entity's type before executing a write
+// operation (e.g. to retrieve its StorageCollection or its declared
+// Relationships for validation).
+func FindTypeDef(schema types.Schema, typeName string) (types.TypeDefinition, error) {
+	for _, td := range schema.Types {
+		if td.Name == typeName {
+			return td, nil
+		}
+	}
+	return types.TypeDefinition{}, fmt.Errorf("type %q not found in schema %s", typeName, schema.ID)
+}
+
+// FindRelationshipDef returns the [types.RelationshipDefinition] with the
+// given label declared on the source TypeDefinition, or an error if no
+// matching definition exists.
+//
+// Implementations should call this inside CreateRelationship to validate the
+// edge label and target type before writing to the edge collection.
+//
+//	td, err := entitygraph.FindTypeDef(schema, fromEntity.TypeID)
+//	if err != nil { return entitygraph.ErrInvalidRelationship }
+//	rd, err := entitygraph.FindRelationshipDef(td, label)
+//	if err != nil { return entitygraph.ErrInvalidRelationship }
+//	if rd.ToType != toEntity.TypeID { return entitygraph.ErrInvalidRelationship }
+func FindRelationshipDef(td types.TypeDefinition, label string) (types.RelationshipDefinition, error) {
+	for _, rd := range td.Relationships {
+		if rd.Name == label {
+			return rd, nil
+		}
+	}
+	return types.RelationshipDefinition{}, fmt.Errorf("relationship %q not declared on type %q", label, td.Name)
 }
