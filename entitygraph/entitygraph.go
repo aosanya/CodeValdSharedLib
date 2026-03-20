@@ -37,6 +37,10 @@ var ErrRelationshipCardinalityViolation = errors.New("relationship cardinality v
 // relationship declared with Required = true.
 var ErrRequiredRelationshipViolation = errors.New("required relationship violation")
 
+// ErrSchemaNotFound is returned by SchemaManager methods when no schema
+// document (draft or published) exists for the given agency or version.
+var ErrSchemaNotFound = errors.New("schema not found")
+
 // DataManager is the business-logic entry point for entity lifecycle and graph
 // operations. Consumers alias this as their own service-scoped interface
 // (e.g. DTDataManager = entitygraph.DataManager).
