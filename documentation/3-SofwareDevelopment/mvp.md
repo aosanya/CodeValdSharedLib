@@ -88,7 +88,8 @@ git branch -d feature/SHAREDLIB-XXX_description
 
 | Task ID | Title | Status | Depends On | Notes |
 |---|---|---|---|---|
-| ~~SHAREDLIB-010~~ ✅ | `entitygraph` package | ✅ Done | ~~SHAREDLIB-001~~ ✅ | `entitygraph/entitygraph.go`: `DataManager` + `SchemaManager` interfaces and all associated models (`Entity`, `Relationship`, `CreateEntityRequest`, `UpdateEntityRequest`, `EntityFilter`, `CreateRelationshipRequest`, `RelationshipFilter`, `TraverseGraphRequest`, `TraverseGraphResult`). ArangoDB-backed concrete implementation. Already consumed by CodeValdDT and CodeValdComm (architecturally defined); now being materialised as Go code for CodeValdAgency refactor. |
+| ~~SHAREDLIB-010~~ ✅ | `entitygraph` package | ✅ Done |
+| SHAREDLIB-011 | RelationshipDefinition — extend `entitygraph` with typed graph edges, schema versioning, and schema-driven HTTP route generation | 🚀 In Progress | ~~SHAREDLIB-001~~ ✅ | `entitygraph/entitygraph.go`: `DataManager` + `SchemaManager` interfaces and all associated models (`Entity`, `Relationship`, `CreateEntityRequest`, `UpdateEntityRequest`, `EntityFilter`, `CreateRelationshipRequest`, `RelationshipFilter`, `TraverseGraphRequest`, `TraverseGraphResult`). ArangoDB-backed concrete implementation. Already consumed by CodeValdDT and CodeValdComm (architecturally defined); now being materialised as Go code for CodeValdAgency refactor. |
 
 ---
 

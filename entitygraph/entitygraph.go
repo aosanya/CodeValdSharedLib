@@ -97,25 +97,48 @@ type DataManager interface {
 }
 
 // SchemaManager is the schema storage contract injected into a concrete
-// DataManager implementation. It owns read and write access to the service's
-// schema collection (e.g. dt_schemas for CodeValdDT, comm_schemas for
-// CodeValdComm).
+// DataManager implementation. It separates the mutable draft schema
+// (one document per agency, overwritten by SetSchema) from the immutable
+// published history (append-only snapshots produced by Publish and Activate).
 //
-// Updating the schema produces a new immutable version; previous versions are
-// preserved and readable via GetSchema.
+// Updating the draft does not affect live traffic — callers must Publish and
+// then Activate a version before it is used by CreateEntity / CreateRelationship.
 type SchemaManager interface {
-	// SetSchema stores a new schema version for the given agency.
-	// The version number is set by the implementation (auto-increment from the
-	// highest existing version).
+	// Draft collection — one mutable document per agency.
+
+	// SetSchema overwrites the agency's current draft schema.
+	// The draft is never versioned; only published snapshots carry version numbers.
+	// ValidateSchema is NOT called here — invalid drafts are permitted until Publish.
 	SetSchema(ctx context.Context, schema types.Schema) error
 
-	// GetSchema returns the schema at the given version for the agency.
-	// Returns ErrSchemaNotFound if no schema exists for that version.
-	GetSchema(ctx context.Context, agencyID string, version int) (types.Schema, error)
+	// GetSchema returns the agency's current draft schema.
+	// Returns ErrSchemaNotFound if no draft has been created yet.
+	GetSchema(ctx context.Context, agencyID string) (types.Schema, error)
 
-	// ListSchemaVersions returns all known schema versions for the agency in
-	// ascending version order.
-	ListSchemaVersions(ctx context.Context, agencyID string) ([]types.Schema, error)
+	// Published collection — immutable, append-only.
+
+	// Publish validates the current draft (ValidateSchema) and snapshots it into
+	// the published collection as a new version with Active = false.
+	// The version number is auto-assigned (highest existing + 1; first publish = 1).
+	// Returns an error and creates no snapshot if validation fails or no draft exists.
+	Publish(ctx context.Context, agencyID string) error
+
+	// Activate promotes the given published version to active, setting Active = true
+	// on the target and Active = false on any previously active version, in a single
+	// transaction. Returns ErrSchemaNotFound if the version does not exist.
+	Activate(ctx context.Context, agencyID string, version int) error
+
+	// GetActive returns the single published version where Active == true.
+	// Returns ErrSchemaNotFound if no version has been activated yet.
+	GetActive(ctx context.Context, agencyID string) (types.Schema, error)
+
+	// GetVersion returns a specific published version.
+	// Returns ErrSchemaNotFound if the version does not exist.
+	GetVersion(ctx context.Context, agencyID string, version int) (types.Schema, error)
+
+	// ListVersions returns all published versions for the agency in ascending
+	// version order. Includes both active and inactive versions.
+	ListVersions(ctx context.Context, agencyID string) ([]types.Schema, error)
 }
 
 // Entity is an instance of a typed real-world object managed by a DataManager.
@@ -162,6 +185,24 @@ type CreateEntityRequest struct {
 
 	// Properties are the initial state values for the entity.
 	Properties map[string]any
+
+	// Relationships are optional inline edges to create atomically with the
+	// entity. Each entry is validated against the TypeDefinition before any
+	// writes are made. If any validation fails the entire operation is aborted.
+	// Required relationships (RelationshipDefinition.Required == true) must be
+	// supplied here; omitting them causes ErrRequiredRelationshipViolation.
+	Relationships []EntityRelationshipRequest
+}
+
+// EntityRelationshipRequest carries a single relationship to create alongside
+// a new entity in [CreateEntityRequest].
+type EntityRelationshipRequest struct {
+	// Name is the edge label — must match a RelationshipDefinition.Name declared
+	// on the entity's TypeDefinition.
+	Name string
+
+	// ToID is the target entity ID.
+	ToID string
 }
 
 // UpdateEntityRequest is the input for patching an entity's properties.
@@ -257,6 +298,11 @@ type TraverseGraphRequest struct {
 
 	// Depth is the maximum traversal depth. 0 is treated as 1.
 	Depth int
+
+	// Names restricts traversal to edges whose Name is in this list.
+	// An empty or nil slice means no filtering — all reachable edges are followed
+	// regardless of label.
+	Names []string
 }
 
 // TraverseGraphResult is returned by TraverseGraph.
@@ -305,4 +351,87 @@ func FindRelationshipDef(td types.TypeDefinition, label string) (types.Relations
 		}
 	}
 	return types.RelationshipDefinition{}, fmt.Errorf("relationship %q not declared on type %q", label, td.Name)
+}
+
+// ValidateCreateRelationship checks that the proposed edge is permitted by the
+// schema. Must be called by every DataManager backend before writing an edge.
+//
+// Rules enforced:
+//  1. label must match a RelationshipDefinition.Name on fromTypeDef.
+//  2. toTypeID must equal RelationshipDefinition.ToType.
+//
+// Cardinality (ToMany=false upsert vs. ToMany=true insert) is handled by the
+// backend write strategy — not by this function.
+//
+// Returns [ErrInvalidRelationship] if either rule is violated.
+func ValidateCreateRelationship(fromTypeDef types.TypeDefinition, label, toTypeID string) error {
+	rd, err := FindRelationshipDef(fromTypeDef, label)
+	if err != nil {
+		return ErrInvalidRelationship
+	}
+	if rd.ToType != toTypeID {
+		return ErrInvalidRelationship
+	}
+	return nil
+}
+
+// ValidateSchema checks the internal consistency of a [types.Schema] before it
+// is persisted by [SchemaManager.Publish]. Called inside Publish — invalid
+// schemas are rejected and no snapshot is created.
+//
+// Rules enforced:
+//  1. All TypeDefinition.Name values are unique within the schema.
+//  2. All TypeDefinition.PathSegment values are unique within the schema
+//     (non-empty segments only).
+//  3. For every RelationshipDefinition where Inverse != "":
+//     a. ToType must reference a TypeDefinition.Name in the same schema.
+//     b. The ToType's TypeDefinition must declare a RelationshipDefinition
+//     with Name == rd.Inverse.
+//  4. Within each TypeDefinition, all RelationshipDefinition.PathSegment
+//     values are unique (non-empty segments only).
+//
+// Returns a descriptive error on the first violation found.
+func ValidateSchema(schema types.Schema) error {
+	typeNames := make(map[string]struct{}, len(schema.Types))
+	typePathSegs := make(map[string]struct{}, len(schema.Types))
+
+	for _, td := range schema.Types {
+		if _, dup := typeNames[td.Name]; dup {
+			return fmt.Errorf("ValidateSchema %s: duplicate type name %q", schema.AgencyID, td.Name)
+		}
+		typeNames[td.Name] = struct{}{}
+
+		if td.PathSegment != "" {
+			if _, dup := typePathSegs[td.PathSegment]; dup {
+				return fmt.Errorf("ValidateSchema %s: duplicate type PathSegment %q", schema.AgencyID, td.PathSegment)
+			}
+			typePathSegs[td.PathSegment] = struct{}{}
+		}
+	}
+
+	for _, td := range schema.Types {
+		relPathSegs := make(map[string]struct{}, len(td.Relationships))
+		for _, rd := range td.Relationships {
+			if rd.Inverse != "" {
+				toTypeDef, err := FindTypeDef(schema, rd.ToType)
+				if err != nil {
+					return fmt.Errorf("ValidateSchema %s: type %q: relationship %q: ToType %q not found in schema",
+						schema.AgencyID, td.Name, rd.Name, rd.ToType)
+				}
+				if _, err := FindRelationshipDef(toTypeDef, rd.Inverse); err != nil {
+					return fmt.Errorf("ValidateSchema %s: type %q: relationship %q: inverse %q not declared on %q",
+						schema.AgencyID, td.Name, rd.Name, rd.Inverse, rd.ToType)
+				}
+			}
+			if rd.PathSegment != "" {
+				if _, dup := relPathSegs[rd.PathSegment]; dup {
+					return fmt.Errorf("ValidateSchema %s: type %q: duplicate relationship PathSegment %q",
+						schema.AgencyID, td.Name, rd.PathSegment)
+				}
+				relPathSegs[rd.PathSegment] = struct{}{}
+			}
+		}
+	}
+
+	return nil
 }

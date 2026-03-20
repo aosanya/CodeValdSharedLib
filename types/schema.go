@@ -119,6 +119,13 @@ type RelationshipDefinition struct {
 	// may use this to auto-create the inverse edge; behaviour is
 	// implementation-defined and not enforced by the schema layer.
 	Inverse string
+
+	// PathSegment is the URL sub-resource segment used in schema-driven HTTP
+	// route generation (e.g. "workflows" produces
+	// /v{ver}/{agencyID}/{typeSeg}/{id}/workflows).
+	// Must be lowercase, hyphen-separated, and unique within the owning TypeDefinition.
+	// If empty, no sub-resource routes are generated for this relationship.
+	PathSegment string
 }
 
 // TypeDefinition declares a named class of entity within a [Schema].
@@ -133,6 +140,12 @@ type TypeDefinition struct {
 
 	// DisplayName is a human-readable label for this type (e.g. "Water Pump").
 	DisplayName string
+
+	// PathSegment is the URL segment used in schema-driven HTTP route generation
+	// (e.g. "goal-templates" produces /v{ver}/{agencyID}/goal-templates).
+	// Must be lowercase, hyphen-separated, and unique within the schema.
+	// If empty, the type is not represented in the generated route set.
+	PathSegment string
 
 	// Properties is the ordered list of property definitions for this type.
 	Properties []PropertyDefinition
@@ -171,7 +184,14 @@ type Schema struct {
 
 	// Version is the auto-incrementing version number (1, 2, 3, …).
 	// The first publish produces Version 1; each subsequent call increments by one.
+	// Draft documents always carry Version 0.
 	Version int
+
+	// Active is true for the single published schema version that is currently
+	// in use for write operations (CreateEntity, CreateRelationship).
+	// Only one published version per agency can be active at a time.
+	// Draft documents always have Active = false.
+	Active bool
 
 	// Tag is the human-readable version label (e.g. "v1", "v2").
 	Tag string
