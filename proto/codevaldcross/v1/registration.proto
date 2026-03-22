@@ -23,6 +23,17 @@ message PathBinding {
   string field     = 2;
 }
 
+// ConstantBinding injects a hardcoded field value into every gRPC request for
+// this route, regardless of the HTTP request content. Used to pass type_id,
+// relationship name, and similar values that are fixed at route-declaration
+// time — HTTP callers never need to supply them explicitly.
+// Example: {field: "type_id", value: "Goal"} on a ListEntities route ensures
+// only Goal entities are returned regardless of what the caller sends.
+message ConstantBinding {
+  string field = 1;
+  string value = 2;
+}
+
 // RouteDeclaration describes a single HTTP endpoint that a downstream service
 // wants CodeValdCross to expose on its HTTP management server. Cross mounts
 // a generic reverse-proxy handler for each declared route at registration time.
@@ -46,6 +57,12 @@ message RouteDeclaration {
   // path_bindings declares how URL path parameters map into the top-level
   // fields of the gRPC request message.
   repeated PathBinding path_bindings = 5;
+
+  // constant_bindings injects fixed field values into the gRPC request body
+  // at dispatch time. CodeValdCross applies these before forwarding so that
+  // routes backed by generic RPCs (e.g. ListEntities, CreateEntity) carry
+  // type metadata without exposing it to HTTP callers.
+  repeated ConstantBinding constant_bindings = 6;
 }
 
 // RegisterRequest carries the service identity and its pub/sub topic contracts.

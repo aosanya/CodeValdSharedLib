@@ -41,6 +41,22 @@ var ErrRequiredRelationshipViolation = errors.New("required relationship violati
 // document (draft or published) exists for the given agency or version.
 var ErrSchemaNotFound = errors.New("schema not found")
 
+// ErrEntityNotFound is returned by GetEntity, UpdateEntity, DeleteEntity, and
+// CreateRelationship when the referenced entity does not exist.
+var ErrEntityNotFound = errors.New("entity not found")
+
+// ErrEntityAlreadyExists is returned by CreateEntity when an entity with the
+// same ID already exists for the agency.
+var ErrEntityAlreadyExists = errors.New("entity already exists")
+
+// ErrRelationshipNotFound is returned by GetRelationship and DeleteRelationship
+// when no relationship with the given ID exists for the agency.
+var ErrRelationshipNotFound = errors.New("relationship not found")
+
+// ErrImmutableType is returned by UpdateEntity when the entity's TypeDefinition
+// has Immutable set to true.
+var ErrImmutableType = errors.New("entity type is immutable")
+
 // DataManager is the business-logic entry point for entity lifecycle and graph
 // operations. Consumers alias this as their own service-scoped interface
 // (e.g. DTDataManager = entitygraph.DataManager).

@@ -69,22 +69,26 @@ func RoutesFromSchema(schema types.Schema, basePath, agencyIDParam, grpcService 
 		typePath := basePath + "/" + td.PathSegment
 		typeName := toSnake(td.Name)
 
+		typeConstant := []types.ConstantBinding{{Field: "type_id", Value: td.Name}}
+
 		// LIST all entities of this type.
 		routes = append(routes, types.RouteInfo{
-			Method:       "GET",
-			Pattern:      typePath,
-			Capability:   "list_" + typeName,
-			GrpcMethod:   grpcService + "/ListEntities",
-			PathBindings: []types.PathBinding{agencyBinding},
+			Method:           "GET",
+			Pattern:          typePath,
+			Capability:       "list_" + typeName,
+			GrpcMethod:       grpcService + "/ListEntities",
+			PathBindings:     []types.PathBinding{agencyBinding},
+			ConstantBindings: typeConstant,
 		})
 
 		// CREATE a new entity of this type.
 		routes = append(routes, types.RouteInfo{
-			Method:       "POST",
-			Pattern:      typePath,
-			Capability:   "create_" + typeName,
-			GrpcMethod:   grpcService + "/CreateEntity",
-			PathBindings: []types.PathBinding{agencyBinding},
+			Method:           "POST",
+			Pattern:          typePath,
+			Capability:       "create_" + typeName,
+			GrpcMethod:       grpcService + "/CreateEntity",
+			PathBindings:     []types.PathBinding{agencyBinding},
+			ConstantBindings: typeConstant,
 		})
 
 		// Per-entity and relationship routes require EntityIDParam.
@@ -96,32 +100,35 @@ func RoutesFromSchema(schema types.Schema, basePath, agencyIDParam, grpcService 
 
 		// GET a single entity by ID.
 		routes = append(routes, types.RouteInfo{
-			Method:       "GET",
-			Pattern:      typePath + entitySeg,
-			Capability:   "get_" + typeName,
-			GrpcMethod:   grpcService + "/GetEntity",
-			PathBindings: []types.PathBinding{agencyBinding, entityBinding},
+			Method:           "GET",
+			Pattern:          typePath + entitySeg,
+			Capability:       "get_" + typeName,
+			GrpcMethod:       grpcService + "/GetEntity",
+			PathBindings:     []types.PathBinding{agencyBinding, entityBinding},
+			ConstantBindings: typeConstant,
 		})
 
 		// UPDATE a single entity by ID — skipped for Immutable types
 		// (UpdateEntity returns ErrImmutableType for those).
 		if !td.Immutable {
 			routes = append(routes, types.RouteInfo{
-				Method:       "PUT",
-				Pattern:      typePath + entitySeg,
-				Capability:   "update_" + typeName,
-				GrpcMethod:   grpcService + "/UpdateEntity",
-				PathBindings: []types.PathBinding{agencyBinding, entityBinding},
+				Method:           "PUT",
+				Pattern:          typePath + entitySeg,
+				Capability:       "update_" + typeName,
+				GrpcMethod:       grpcService + "/UpdateEntity",
+				PathBindings:     []types.PathBinding{agencyBinding, entityBinding},
+				ConstantBindings: typeConstant,
 			})
 		}
 
 		// DELETE a single entity by ID.
 		routes = append(routes, types.RouteInfo{
-			Method:       "DELETE",
-			Pattern:      typePath + entitySeg,
-			Capability:   "delete_" + typeName,
-			GrpcMethod:   grpcService + "/DeleteEntity",
-			PathBindings: []types.PathBinding{agencyBinding, entityBinding},
+			Method:           "DELETE",
+			Pattern:          typePath + entitySeg,
+			Capability:       "delete_" + typeName,
+			GrpcMethod:       grpcService + "/DeleteEntity",
+			PathBindings:     []types.PathBinding{agencyBinding, entityBinding},
+			ConstantBindings: typeConstant,
 		})
 
 		// Relationship routes for each declared edge with a PathSegment.
@@ -132,26 +139,29 @@ func RoutesFromSchema(schema types.Schema, basePath, agencyIDParam, grpcService 
 
 			relPath := typePath + entitySeg + "/" + rel.PathSegment
 			relCap := typeName + "_" + rel.Name
+			relNameConstant := []types.ConstantBinding{{Field: "name", Value: rel.Name}}
 
 			// LIST all edges of this type from the source entity.
 			routes = append(routes, types.RouteInfo{
-				Method:       "GET",
-				Pattern:      relPath,
-				Capability:   "list_" + relCap,
-				GrpcMethod:   grpcService + "/ListRelationships",
-				PathBindings: []types.PathBinding{agencyBinding, entityBinding},
+				Method:           "GET",
+				Pattern:          relPath,
+				Capability:       "list_" + relCap,
+				GrpcMethod:       grpcService + "/ListRelationships",
+				PathBindings:     []types.PathBinding{agencyBinding, entityBinding},
+				ConstantBindings: relNameConstant,
 			})
 
 			// CREATE a new edge from the source entity.
 			routes = append(routes, types.RouteInfo{
-				Method:       "POST",
-				Pattern:      relPath,
-				Capability:   "create_" + relCap,
-				GrpcMethod:   grpcService + "/CreateRelationship",
-				PathBindings: []types.PathBinding{agencyBinding, entityBinding},
+				Method:           "POST",
+				Pattern:          relPath,
+				Capability:       "create_" + relCap,
+				GrpcMethod:       grpcService + "/CreateRelationship",
+				PathBindings:     []types.PathBinding{agencyBinding, entityBinding},
+				ConstantBindings: relNameConstant,
 			})
 
-			// DELETE an edge by relationship ID.
+			// DELETE an edge by relationship ID — no constant bindings needed.
 			routes = append(routes, types.RouteInfo{
 				Method:       "DELETE",
 				Pattern:      relPath + "/{relId}",

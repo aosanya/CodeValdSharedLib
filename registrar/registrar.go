@@ -105,12 +105,20 @@ func routesToProto(routes []types.RouteInfo) []*crossv1.RouteDeclaration {
 				Field:    pb.Field,
 			})
 		}
+		var constants []*crossv1.ConstantBinding
+		for _, cb := range r.ConstantBindings {
+			constants = append(constants, &crossv1.ConstantBinding{
+				Field: cb.Field,
+				Value: cb.Value,
+			})
+		}
 		decls[i] = &crossv1.RouteDeclaration{
-			Method:       r.Method,
-			Pattern:      r.Pattern,
-			Capability:   r.Capability,
-			GrpcMethod:   r.GrpcMethod,
-			PathBindings: bindings,
+			Method:           r.Method,
+			Pattern:          r.Pattern,
+			Capability:       r.Capability,
+			GrpcMethod:       r.GrpcMethod,
+			PathBindings:     bindings,
+			ConstantBindings: constants,
 		}
 	}
 	return decls
