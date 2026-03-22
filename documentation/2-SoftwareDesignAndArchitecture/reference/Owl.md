@@ -25,6 +25,7 @@ limit.
 | [relationship-definition-behaviour.md](relationship-definition-behaviour.md) | Storage and write strategy, validation helpers, inverse edge auto-create/delete, soft delete cascade, `TraverseGraph` name filter |
 | [schema-versioning.md](schema-versioning.md) | Draft/published collections, `SchemaManager` interface, schema activation, schema-driven HTTP routes, `PathSegment` |
 | [owl-reference.md](owl-reference.md) | Compact OWL/RDF construct mapping, array representation, OWL 2 profile summary, further reading |
+| [schema-parent-child-patterns.md](schema-parent-child-patterns.md) | Shared rules for parent-child schemas: empty Relationships, PathSegment, Required inverses, root types, publish gate |
 
 ---
 
@@ -58,6 +59,11 @@ limit.
 | Q24 | `Activate` owns DB flip only; registrar calls `GetActive` on each heartbeat cycle to derive and re-register routes — no explicit trigger needed |
 | Q25 | `TypeDefinition.PathSegment string` — schema author sets the URL segment explicitly (e.g. `"goal-templates"`); `GetActive` uses it as-is for route generation |
 | Q26 | `RelationshipDefinition.PathSegment string` — same pattern; schema author sets sub-resource segment explicitly (e.g. `"workflows"`); empty = no sub-resource routes generated |
+| Q27 | Empty `Relationships` slice on a `TypeDefinition` causes `ErrInvalidRelationship` on any `CreateRelationship` call — every type that participates in any edge must declare it |
+| Q28 | `TypeDefinition.PathSegment` must be set on every type intended to be addressable via HTTP; empty = no routes generated |
+| Q29 | Child types declare their parent relationship as `Required: true, ToMany: false` — `CreateEntity` must supply the parent link atomically; orphan children are rejected |
+| Q30 | Root / container types carry no `Required` outbound relationships — they can be created standalone; children are added progressively |
+| Q31 | Business completeness (e.g. "must have at least one Goal") is deferred to the publish/activation gate — `entitygraph` enforces structural integrity only |
 | Q27 | `ValidateSchema` enforces `PathSegment` uniqueness — across all `TypeDefinition` entries and within each `TypeDefinition`'s `RelationshipDefinition` entries |
 | H1 | `Publish` also runs `ValidateSchema` before snapshotting — invalid draft returns error, no snapshot created |
 | H2 | `DefaultAgencySchema` updated with `PathSegment` on all `TypeDefinition` and `RelationshipDefinition` entries; `Agency.PathSegment` left empty (no routes — it is the agency context); `Inverse` added to `has_goal` and `has_workflow` |

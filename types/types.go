@@ -19,9 +19,22 @@ type PathBinding struct {
 	Field string `json:"field"`
 }
 
+// ConstantBinding injects a hardcoded field value into every gRPC request for
+// a route, regardless of the HTTP request content. CodeValdCross writes this
+// value into the JSON body before forwarding so that generic RPCs like
+// ListEntities and CreateEntity receive the correct type_id or relationship
+// name without the HTTP caller having to supply it.
+type ConstantBinding struct {
+	// Field is the proto field name to inject (e.g. "type_id", "name").
+	Field string `json:"field"`
+	// Value is the hardcoded value to set (e.g. "Goal", "belongs_to_agency").
+	Value string `json:"value"`
+}
+
 // RouteInfo is the serialisable metadata for a single HTTP route declared by a
 // downstream service at registration time. CodeValdCross stores these and uses
-// GrpcMethod together with PathBindings when acting as a reverse proxy.
+// GrpcMethod together with PathBindings and ConstantBindings when acting as a
+// reverse proxy.
 type RouteInfo struct {
 	// Method is the HTTP verb (e.g. "GET", "POST").
 	Method string `json:"method"`
@@ -36,6 +49,10 @@ type RouteInfo struct {
 	// PathBindings declares how URL path parameters map into the top-level
 	// fields of the gRPC request message.
 	PathBindings []PathBinding `json:"path_bindings,omitempty"`
+	// ConstantBindings injects fixed field values into the gRPC request body at
+	// dispatch time. Used to carry type_id, relationship name, and similar
+	// values that are known at route-declaration time.
+	ConstantBindings []ConstantBinding `json:"constant_bindings,omitempty"`
 }
 
 // ServiceRegistration is the Go domain representation of a downstream service's

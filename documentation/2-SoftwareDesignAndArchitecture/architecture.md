@@ -23,13 +23,17 @@ CodeValdCross and send periodic heartbeat pings.
 ```go
 // New constructs a Registrar. The caller provides all service-specific
 // metadata: serviceName, producedTopics, consumedTopics, and declaredRoutes.
+// routes is a []types.RouteInfo slice — use schemaroutes.RoutesFromSchema to
+// derive these dynamically from a types.Schema, or build them by hand.
+// The registrar converts them to []*crossv1.RouteDeclaration (including
+// ConstantBindings) before each Register heartbeat.
 func New(
     crossAddr, listenAddr, agencyID string,
     serviceName string,
     produces, consumes []string,
-    routes []*crossv1.RouteDeclaration,
+    routes []types.RouteInfo,
     pingInterval, pingTimeout time.Duration,
-) (*Registrar, error)
+) (Registrar, error)
 
 func (r *Registrar) Run(ctx context.Context)   // blocking; call in a goroutine
 func (r *Registrar) Close()
@@ -131,15 +135,25 @@ type PathBinding struct {
     Field    string `json:"field"`     // e.g. "agency_id"
 }
 
+// ConstantBinding injects a hardcoded field value into every gRPC request for
+// a route, regardless of the HTTP request content. Used to pass type_id,
+// relationship name, and similar values that are fixed at route-declaration
+// time — HTTP callers never need to supply them explicitly.
+type ConstantBinding struct {
+    Field string `json:"field"` // proto field name to inject, e.g. "type_id"
+    Value string `json:"value"` // fixed value, e.g. "Goal"
+}
+
 // RouteInfo is the metadata for a single HTTP route declared by a downstream
-// service at registration time. CodeValdCross uses GrpcMethod + PathBindings
-// in its dynamic reverse proxy.
+// service at registration time. CodeValdCross uses GrpcMethod, PathBindings,
+// and ConstantBindings in its dynamic reverse proxy.
 type RouteInfo struct {
-    Method       string        `json:"method"`
-    Pattern      string        `json:"pattern"`
-    Capability   string        `json:"capability,omitempty"`
-    GrpcMethod   string        `json:"grpc_method,omitempty"`
-    PathBindings []PathBinding `json:"path_bindings,omitempty"`
+    Method           string            `json:"method"`
+    Pattern          string            `json:"pattern"`
+    Capability       string            `json:"capability,omitempty"`
+    GrpcMethod       string            `json:"grpc_method,omitempty"`
+    PathBindings     []PathBinding     `json:"path_bindings,omitempty"`
+    ConstantBindings []ConstantBinding `json:"constant_bindings,omitempty"`
 }
 
 // ServiceRegistration is the Go domain representation of a downstream service's
@@ -207,6 +221,59 @@ All associated models (`Entity`, `Relationship`, `CreateEntityRequest`,
 `RelationshipFilter`, `TraverseGraphRequest`, `TraverseGraphResult`) are defined
 in this package and imported by both services.
 
+**Exported error variables** (used by consuming services via `errors.Is`):
+
+```go
+var (
+    ErrEntityNotFound                   = errors.New("entity not found")
+    ErrEntityAlreadyExists              = errors.New("entity already exists")
+    ErrRelationshipNotFound             = errors.New("relationship not found")
+    ErrImmutableType                    = errors.New("entity type is immutable")
+    ErrInvalidRelationship              = errors.New("invalid relationship")
+    ErrRelationshipCardinalityViolation = errors.New("relationship cardinality violation")
+    ErrRequiredRelationshipViolation    = errors.New("required relationship violation")
+    ErrSchemaNotFound                   = errors.New("schema not found")
+)
+```
+
+---
+
+### `schemaroutes` — Schema-Driven Route Generation
+
+Derives a complete set of HTTP [`types.RouteInfo`] entries from a
+[`types.Schema`], eliminating hand-maintained per-type route declarations in
+each service. Called once at startup; the result is passed directly to the
+SharedLib `registrar`.
+
+```go
+// RoutesFromSchema generates all HTTP routes for a service backed by
+// entitygraph. Each route carries PathBindings and ConstantBindings so
+// CodeValdCross injects type_id and relationship name at dispatch time.
+func RoutesFromSchema(schema types.Schema, basePath, agencyIDParam, grpcService string) []types.RouteInfo
+```
+
+Routes generated **per TypeDefinition** with a non-empty `PathSegment`:
+
+| HTTP | Pattern | gRPC method | ConstantBindings |
+|---|---|---|---|
+| `GET` | `{basePath}/{type.PathSegment}` | `ListEntities` | `type_id = td.Name` |
+| `POST` | `{basePath}/{type.PathSegment}` | `CreateEntity` | `type_id = td.Name` |
+| `GET` | `{basePath}/{type.PathSegment}/{td.EntityIDParam}` | `GetEntity` | `type_id = td.Name` |
+| `PUT` | `{basePath}/{type.PathSegment}/{td.EntityIDParam}` | `UpdateEntity` | `type_id = td.Name` (mutable only) |
+| `DELETE` | `{basePath}/{type.PathSegment}/{td.EntityIDParam}` | `DeleteEntity` | `type_id = td.Name` |
+
+Routes generated **per RelationshipDefinition** with a non-empty `PathSegment`:
+
+| HTTP | Pattern | gRPC method | ConstantBindings |
+|---|---|---|---|
+| `GET` | `…/{td.EntityIDParam}/{rel.PathSegment}` | `ListRelationships` | `name = rel.Name` |
+| `POST` | `…/{td.EntityIDParam}/{rel.PathSegment}` | `CreateRelationship` | `name = rel.Name` |
+| `DELETE` | `…/{td.EntityIDParam}/{rel.PathSegment}/{relId}` | `DeleteRelationship` | _(none)_ |
+
+Currently consumed by **CodeValdAgency** (via `DefaultAgencySchema()`). Any
+future service backed by `entitygraph` can call this function with its own
+schema and gRPC service path.
+
 ---
 
 ## 3. Package Layout
@@ -226,6 +293,8 @@ github.com/aosanya/CodeValdSharedLib/
 │   └── schema.go             ← PropertyType, TypeDefinition, Schema, …
 ├── entitygraph/
 │   └── entitygraph.go        ← DataManager, SchemaManager interfaces + all models
+├── schemaroutes/
+│   └── schemaroutes.go       ← RoutesFromSchema: auto-generates RouteInfo slices from types.Schema
 ├── proto/
 │   └── codevaldcross/
 │       └── v1/
