@@ -11,6 +11,7 @@ import (
 	"time"
 
 	crossv1 "github.com/aosanya/CodeValdSharedLib/gen/go/codevaldcross/v1"
+	"github.com/aosanya/CodeValdSharedLib/types"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -37,7 +38,7 @@ type registrar struct {
 	serviceName  string
 	produces     []string
 	consumes     []string
-	routes       []*crossv1.RouteDeclaration
+	routes       []*crossv1.RouteDeclaration // converted from []types.RouteInfo at construction
 	pingInterval time.Duration
 	pingTimeout  time.Duration
 	conn         *grpc.ClientConn
@@ -55,7 +56,9 @@ type registrar struct {
 //   - serviceName   — unique identifier for the calling service (e.g. "codevaldgit")
 //   - produces      — pub/sub topics this service emits
 //   - consumes      — pub/sub topics this service subscribes to
-//   - routes        — HTTP routes CodeValdCross should proxy to this service
+//   - routes        — HTTP routes CodeValdCross should proxy to this service;
+//     use [github.com/aosanya/CodeValdSharedLib/schemaroutes.RoutesFromSchema]
+//     to derive these dynamically from a types.Schema
 //   - pingInterval  — heartbeat cadence; if ≤ 0, only the initial ping is sent
 //   - pingTimeout   — per-RPC timeout for each Register call
 //
@@ -64,7 +67,7 @@ func New(
 	crossAddr, listenAddr, agencyID string,
 	serviceName string,
 	produces, consumes []string,
-	routes []*crossv1.RouteDeclaration,
+	routes []types.RouteInfo,
 	pingInterval, pingTimeout time.Duration,
 ) (Registrar, error) {
 	conn, err := grpc.NewClient(crossAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
@@ -78,12 +81,39 @@ func New(
 		serviceName:  serviceName,
 		produces:     produces,
 		consumes:     consumes,
-		routes:       routes,
+		routes:       routesToProto(routes),
 		pingInterval: pingInterval,
 		pingTimeout:  pingTimeout,
 		conn:         conn,
 		client:       crossv1.NewOrchestratorServiceClient(conn),
 	}, nil
+}
+
+// routesToProto converts the public []types.RouteInfo slice into the proto
+// representation sent in every Register heartbeat. This keeps proto types out
+// of the registrar's public API.
+func routesToProto(routes []types.RouteInfo) []*crossv1.RouteDeclaration {
+	if len(routes) == 0 {
+		return nil
+	}
+	decls := make([]*crossv1.RouteDeclaration, len(routes))
+	for i, r := range routes {
+		var bindings []*crossv1.PathBinding
+		for _, pb := range r.PathBindings {
+			bindings = append(bindings, &crossv1.PathBinding{
+				UrlParam: pb.URLParam,
+				Field:    pb.Field,
+			})
+		}
+		decls[i] = &crossv1.RouteDeclaration{
+			Method:       r.Method,
+			Pattern:      r.Pattern,
+			Capability:   r.Capability,
+			GrpcMethod:   r.GrpcMethod,
+			PathBindings: bindings,
+		}
+	}
+	return decls
 }
 
 // Run sends an immediate Register ping, then repeats at the configured interval

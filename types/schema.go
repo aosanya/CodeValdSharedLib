@@ -169,6 +169,14 @@ type TypeDefinition struct {
 	// whose TypeDefinition has Immutable set to true. Only CreateEntity and
 	// DeleteEntity are valid for immutable types.
 	Immutable bool
+
+	// EntityIDParam is the URL placeholder name used for the entity-ID segment in
+	// schema-driven HTTP route generation (e.g. "workflowId" produces
+	// /agency/{agencyId}/workflows/{workflowId}).
+	// When empty, schemaroutes.RoutesFromSchema skips per-entity and
+	// relationship routes for this type — only the collection-level list and
+	// create routes are emitted.
+	EntityIDParam string
 }
 
 // Schema is a versioned, immutable collection of [TypeDefinition]s for one
