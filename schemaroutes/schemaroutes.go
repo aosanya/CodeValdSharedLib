@@ -71,13 +71,23 @@ func RoutesFromSchema(schema types.Schema, basePath, agencyIDParam, grpcService 
 
 		typeConstant := []types.ConstantBinding{{Field: "type_id", Value: td.Name}}
 
+		// Intermediate path params are {param} placeholders embedded in the
+		// PathSegment itself (e.g. {draftId} in "drafts/{draftId}/goals").
+		// They are NOT the entity ID param — they scope the collection to a
+		// parent entity. Each is bound to "properties.<snake_case_param>" in the
+		// gRPC request so that ListEntities can filter by that property.
+		intermediatBindings := intermediatePathBindings(td.PathSegment, entityIDParam)
+
 		// LIST all entities of this type.
+		// Includes intermediate bindings so that Draft* types are scoped to the
+		// correct draft (e.g. draftId → properties.draft_id).
+		listBindings := append([]types.PathBinding{agencyBinding}, intermediatBindings...)
 		routes = append(routes, types.RouteInfo{
 			Method:           "GET",
 			Pattern:          typePath,
 			Capability:       "list_" + typeName,
 			GrpcMethod:       grpcService + "/ListEntities",
-			PathBindings:     []types.PathBinding{agencyBinding},
+			PathBindings:     listBindings,
 			ConstantBindings: typeConstant,
 		})
 
@@ -189,4 +199,31 @@ func toSnake(s string) string {
 		b.WriteRune(unicode.ToLower(r))
 	}
 	return b.String()
+}
+
+// intermediatePathBindings extracts {param} placeholders from pathSegment that
+// are not the entity ID param and returns PathBindings that map each URL param
+// to "properties.<snake_case_param>" in the gRPC request.
+//
+// Example: pathSegment "drafts/{draftId}/goals", entityIDParam "goalId"
+// → [{URLParam: "draftId", Field: "properties.draft_id"}]
+//
+// This ensures that LIST requests for Draft* sub-types are automatically
+// scoped by the draft_id property, preventing cross-draft data leakage.
+func intermediatePathBindings(pathSegment, entityIDParam string) []types.PathBinding {
+	var bindings []types.PathBinding
+	for _, seg := range strings.Split(pathSegment, "/") {
+		if !strings.HasPrefix(seg, "{") || !strings.HasSuffix(seg, "}") {
+			continue
+		}
+		param := seg[1 : len(seg)-1]
+		if param == entityIDParam {
+			continue
+		}
+		bindings = append(bindings, types.PathBinding{
+			URLParam: param,
+			Field:    "properties." + toSnake(param),
+		})
+	}
+	return bindings
 }

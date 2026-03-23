@@ -253,6 +253,13 @@ type EntityFilter struct {
 	// TypeID restricts results to entities of this type.
 	// If empty, all entity types are included.
 	TypeID string
+
+	// Properties restricts results to entities whose stored properties contain
+	// all of the specified key-value pairs (exact string match per key).
+	// If nil or empty, no property-level filtering is applied.
+	// Typical use: filter Draft* sub-types by draft_id when the type shares a
+	// collection with multiple drafts.
+	Properties map[string]any
 }
 
 // Relationship is a directed graph edge between two entities.
