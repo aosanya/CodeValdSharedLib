@@ -57,6 +57,11 @@ var ErrRelationshipNotFound = errors.New("relationship not found")
 // has Immutable set to true.
 var ErrImmutableType = errors.New("entity type is immutable")
 
+// ErrUniqueKeyNotDefined is returned by UpsertEntity when the entity's
+// TypeDefinition does not declare a UniqueKey (types.TypeDefinition.UniqueKey
+// is empty or nil).
+var ErrUniqueKeyNotDefined = errors.New("unique key not defined for type")
+
 // DataManager is the business-logic entry point for entity lifecycle and graph
 // operations. Consumers alias this as their own service-scoped interface
 // (e.g. DTDataManager = entitygraph.DataManager).
@@ -92,6 +97,13 @@ type DataManager interface {
 	// ListEntities returns all entities matching the filter.
 	// Soft-deleted entities are excluded from the results.
 	ListEntities(ctx context.Context, filter EntityFilter) ([]Entity, error)
+
+	// UpsertEntity creates or merges an entity using the type's UniqueKey.
+	// If a non-deleted entity whose UniqueKey property values match the request
+	// already exists, its properties are patched (merged) and the updated entity
+	// is returned. Otherwise a new entity is inserted.
+	// Returns ErrUniqueKeyNotDefined if the TypeDefinition has no UniqueKey declared.
+	UpsertEntity(ctx context.Context, req CreateEntityRequest) (Entity, error)
 
 	// CreateRelationship creates a directed edge between two entities.
 	// Returns ErrEntityNotFound if either the FromID or ToID entity does not exist.
@@ -449,6 +461,20 @@ func ValidateSchema(schema types.Schema) error {
 						schema.AgencyID, td.Name, rd.PathSegment)
 				}
 				relPathSegs[rd.PathSegment] = struct{}{}
+			}
+		}
+
+		// Validate that every UniqueKey field references a declared property.
+		if len(td.UniqueKey) > 0 {
+			propNames := make(map[string]struct{}, len(td.Properties))
+			for _, pd := range td.Properties {
+				propNames[pd.Name] = struct{}{}
+			}
+			for _, keyField := range td.UniqueKey {
+				if _, ok := propNames[keyField]; !ok {
+					return fmt.Errorf("ValidateSchema %s: type %q: UniqueKey field %q not found in Properties",
+						schema.AgencyID, td.Name, keyField)
+				}
 			}
 		}
 	}

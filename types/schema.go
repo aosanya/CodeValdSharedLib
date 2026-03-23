@@ -177,6 +177,16 @@ type TypeDefinition struct {
 	// relationship routes for this type — only the collection-level list and
 	// create routes are emitted.
 	EntityIDParam string
+
+	// UniqueKey is the ordered list of property names that together form a
+	// composite natural key for this type (e.g. ["Code"] or ["Code", "ParentID"]).
+	// When set, DataManager.UpsertEntity uses these property values to locate an
+	// existing non-deleted entity and merge the supplied properties onto it,
+	// instead of inserting a duplicate.
+	// All names must reference a PropertyDefinition.Name declared in Properties.
+	// An empty or nil slice means no unique key is defined — UpsertEntity returns
+	// ErrUniqueKeyNotDefined for this type.
+	UniqueKey []string
 }
 
 // Schema is a versioned, immutable collection of [TypeDefinition]s for one
