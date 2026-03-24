@@ -32,6 +32,10 @@ const (
 	// PropertyTypeBoolean is a true/false flag.
 	PropertyTypeBoolean PropertyType = "boolean"
 
+	// PropertyTypeUUID is an immutable RFC 4122 UUID string (e.g. "550e8400-e29b-41d4-a716-446655440000").
+	// System-assigned at entity creation time; never set by user input.
+	PropertyTypeUUID PropertyType = "uuid"
+
 	// Choice types — allowed values are stored as runtime data, not in the schema.
 
 	// PropertyTypeOption is a single fixed value from a predefined set.
@@ -187,6 +191,24 @@ type TypeDefinition struct {
 	// An empty or nil slice means no unique key is defined — UpsertEntity returns
 	// ErrUniqueKeyNotDefined for this type.
 	UniqueKey []string
+
+	// Code is the human-readable, user-facing label for this TypeDefinition
+	// (e.g. "draft_work_item"). Unlike Name, which is the schema-internal
+	// PascalCase key used in code, Code is the stable snake_case identifier
+	// surfaced in API responses, UI labels, and external integrations.
+	// It may be revised when the schema is updated but should be treated as
+	// stable once deployed.
+	Code string
+
+	// RefCode is a pre-assigned, immutable UUID that serves as the stable
+	// cross-reference identifier for this TypeDefinition. Unlike code, which
+	// is a user-facing, human-readable label that may be renamed, RefCode is
+	// generated once before deployment (via the generate_ref_codes.py script)
+	// and never changes. It is the canonical key used in cross-entity reference
+	// properties (e.g. draft_workflow_ref_code) and in any external system that
+	// needs to address this type by a stable, opaque handle.
+	// Must be a valid UUID v4 string (e.g. "a1b2c3d4-e5f6-7890-abcd-ef1234567890").
+	RefCode string
 }
 
 // Schema is a versioned, immutable collection of [TypeDefinition]s for one

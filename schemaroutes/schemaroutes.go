@@ -80,7 +80,7 @@ func RoutesFromSchema(schema types.Schema, basePath, agencyIDParam, grpcService 
 
 		// LIST all entities of this type.
 		// Includes intermediate bindings so that Draft* types are scoped to the
-		// correct draft (e.g. draftId → properties.draft_id).
+		// correct draft (e.g. draftRefCode → properties.draft_ref_code).
 		listBindings := append([]types.PathBinding{agencyBinding}, intermediatBindings...)
 		routes = append(routes, types.RouteInfo{
 			Method:           "GET",
@@ -205,11 +205,11 @@ func toSnake(s string) string {
 // are not the entity ID param and returns PathBindings that map each URL param
 // to "properties.<snake_case_param>" in the gRPC request.
 //
-// Example: pathSegment "drafts/{draftId}/goals", entityIDParam "goalId"
-// → [{URLParam: "draftId", Field: "properties.draft_id"}]
+// Example: pathSegment "drafts/{draftRefCode}/goals", entityIDParam "goalId"
+// → [{URLParam: "draftRefCode", Field: "properties.draft_ref_code"}]
 //
 // This ensures that LIST requests for Draft* sub-types are automatically
-// scoped by the draft_id property, preventing cross-draft data leakage.
+// scoped by the draft_ref_code property, preventing cross-draft data leakage.
 func intermediatePathBindings(pathSegment, entityIDParam string) []types.PathBinding {
 	var bindings []types.PathBinding
 	for _, seg := range strings.Split(pathSegment, "/") {

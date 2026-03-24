@@ -94,7 +94,7 @@ type DeliverableSpec struct {
 // ── HTTP response types ───────────────────────────────────────────────────────
 
 // entityItem is the JSON shape returned by EntityService for a single entity.
-// The id field is the server-assigned UUID used as draft_id, draft_workflow_id,
+// The id field is the server-assigned UUID used as draft_ref_code, draft_workflow_ref_code,
 // etc. in subsequent calls.
 type entityItem struct {
 	ID         string         `json:"id"`

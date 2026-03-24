@@ -380,15 +380,15 @@ func TestRoutesFromSchema_RelationshipDeleteRoute_HasRelIdPathBinding(t *testing
 // ── intermediate path bindings (parent-scoped sub-types) ─────────────────────
 
 func TestRoutesFromSchema_IntermediatePathBinding_MappedToProperty(t *testing.T) {
-	// PathSegment "drafts/{draftId}/goals" has an intermediate {draftId} param
+	// PathSegment "drafts/{draftRefCode}/goals" has an intermediate {draftRefCode} param
 	// that scopes the entity to a parent draft. It must be bound to
-	// "properties.draft_id" in the gRPC request.
+	// "properties.draft_ref_code" in the gRPC request.
 	schema := types.Schema{
 		ID: "intermediate",
 		Types: []types.TypeDefinition{
 			{
 				Name:          "DraftGoal",
-				PathSegment:   "drafts/{draftId}/goals",
+				PathSegment:   "drafts/{draftRefCode}/goals",
 				EntityIDParam: "goalId",
 			},
 		},
@@ -397,25 +397,25 @@ func TestRoutesFromSchema_IntermediatePathBinding_MappedToProperty(t *testing.T)
 	svc := "/svc.v1.EntityService"
 	routes := schemaroutes.RoutesFromSchema(schema, basePath, "agencyId", svc)
 
-	listRoute := findRoute(routes, "GET", basePath+"/drafts/{draftId}/goals")
+	listRoute := findRoute(routes, "GET", basePath+"/drafts/{draftRefCode}/goals")
 	if listRoute == nil {
-		t.Fatal("missing GET /drafts/{draftId}/goals")
+		t.Fatal("missing GET /drafts/{draftRefCode}/goals")
 	}
-	if !hasPathBinding(*listRoute, "draftId", "properties.draft_id") {
-		t.Errorf("list route missing intermediate binding draftId→properties.draft_id; bindings: %v",
+	if !hasPathBinding(*listRoute, "draftRefCode", "properties.draft_ref_code") {
+		t.Errorf("list route missing intermediate binding draftRefCode→properties.draft_ref_code; bindings: %v",
 			listRoute.PathBindings)
 	}
 }
 
 func TestRoutesFromSchema_IntermediatePathBinding_NotInPerEntityRoute(t *testing.T) {
 	// The per-entity route still carries the intermediate binding so that
-	// CodeValdCross can inject draft_id into GetEntity/UpdateEntity requests.
+	// CodeValdCross can inject draft_ref_code into GetEntity/UpdateEntity requests.
 	schema := types.Schema{
 		ID: "intermediate-entity",
 		Types: []types.TypeDefinition{
 			{
 				Name:          "DraftGoal",
-				PathSegment:   "drafts/{draftId}/goals",
+				PathSegment:   "drafts/{draftRefCode}/goals",
 				EntityIDParam: "goalId",
 			},
 		},
@@ -424,9 +424,9 @@ func TestRoutesFromSchema_IntermediatePathBinding_NotInPerEntityRoute(t *testing
 	svc := "/svc.v1.EntityService"
 	routes := schemaroutes.RoutesFromSchema(schema, basePath, "agencyId", svc)
 
-	getRoute := findRoute(routes, "GET", basePath+"/drafts/{draftId}/goals/{goalId}")
+	getRoute := findRoute(routes, "GET", basePath+"/drafts/{draftRefCode}/goals/{goalId}")
 	if getRoute == nil {
-		t.Fatal("missing GET /drafts/{draftId}/goals/{goalId}")
+		t.Fatal("missing GET /drafts/{draftRefCode}/goals/{goalId}")
 	}
 	if !hasPathBinding(*getRoute, "goalId", "entity_id") {
 		t.Error("per-entity route missing entity_id binding")

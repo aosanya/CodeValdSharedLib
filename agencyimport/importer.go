@@ -17,7 +17,7 @@
 //	{"properties": { <entity fields> }}
 //
 // Sub-entity idempotency relies on the UniqueKey defined in each TypeDefinition
-// (e.g. ["draft_id", "code"]) — the server calls UpsertEntity, so a second
+// (e.g. ["draft_ref_code", "code"]) — the server calls UpsertEntity, so a second
 // import with the same code updates the existing record rather than inserting
 // a duplicate.
 package agencyimport
@@ -183,12 +183,12 @@ func (imp *Importer) importConfiguredRoles(ctx context.Context, agencyID, draftI
 	base := imp.url("/agency/", agencyID, "/drafts/", draftID, "/configured-roles")
 	for _, r := range roles {
 		props := map[string]any{
-			"draft_id":    draftID,
-			"code":        r.Code,
-			"name":        r.Name,
-			"description": strings.TrimSpace(r.Description),
-			"actor_type":  r.ActorType,
-			"ordinality":  r.Ordinality,
+			"draft_ref_code": draftID,
+			"code":           r.Code,
+			"name":           r.Name,
+			"description":    strings.TrimSpace(r.Description),
+			"actor_type":     r.ActorType,
+			"ordinality":     r.Ordinality,
 		}
 		if _, err := imp.postEntity(ctx, base, props); err != nil {
 			return fmt.Errorf("configured role %s: %w", r.Code, err)
@@ -204,11 +204,11 @@ func (imp *Importer) importGoals(ctx context.Context, agencyID, draftID string, 
 	base := imp.url("/agency/", agencyID, "/drafts/", draftID, "/goals")
 	for _, g := range goals {
 		props := map[string]any{
-			"draft_id":    draftID,
-			"code":        g.Code,
-			"title":       g.Title,
-			"description": strings.TrimSpace(g.Description),
-			"ordinality":  g.Ordinality,
+			"draft_ref_code": draftID,
+			"code":           g.Code,
+			"title":          g.Title,
+			"description":    strings.TrimSpace(g.Description),
+			"ordinality":     g.Ordinality,
 		}
 		if _, err := imp.postEntity(ctx, base, props); err != nil {
 			return fmt.Errorf("goal %s: %w", g.Code, err)
@@ -225,11 +225,11 @@ func (imp *Importer) importWorkflows(ctx context.Context, agencyID, draftID stri
 
 	for _, wf := range workflows {
 		wfProps := map[string]any{
-			"draft_id":    draftID,
-			"code":        wf.Code,
-			"name":        wf.Name,
-			"description": strings.TrimSpace(wf.Description),
-			"ordinality":  wf.Ordinality,
+			"draft_ref_code": draftID,
+			"code":           wf.Code,
+			"name":           wf.Name,
+			"description":    strings.TrimSpace(wf.Description),
+			"ordinality":     wf.Ordinality,
 		}
 		wfEntity, err := imp.postEntity(ctx, wfBase, wfProps)
 		if err != nil {
@@ -249,16 +249,16 @@ func (imp *Importer) importWorkflows(ctx context.Context, agencyID, draftID stri
 }
 
 // importWorkflowInstructions upserts DraftInstruction entities scoped to a
-// workflow (draft_workflow_id is set; draft_work_item_id is omitted).
+// workflow (draft_workflow_ref_code is set; draft_work_item_ref_code is omitted).
 func (imp *Importer) importWorkflowInstructions(ctx context.Context, agencyID, draftID, wfID string, instructions []InstructionSpec) error {
 	base := imp.url("/agency/", agencyID, "/drafts/", draftID, "/instructions")
 	for _, inst := range instructions {
 		props := map[string]any{
-			"draft_id":          draftID,
-			"code":              inst.Code,
-			"draft_workflow_id": wfID,
-			"content":           strings.TrimSpace(inst.Content),
-			"ordinality":        inst.Ordinality,
+			"draft_ref_code":          draftID,
+			"code":                    inst.Code,
+			"draft_workflow_ref_code": wfID,
+			"content":                 strings.TrimSpace(inst.Content),
+			"ordinality":              inst.Ordinality,
 		}
 		if _, err := imp.postEntity(ctx, base, props); err != nil {
 			return fmt.Errorf("instruction %s: %w", inst.Code, err)
@@ -274,13 +274,13 @@ func (imp *Importer) importWorkItems(ctx context.Context, agencyID, draftID, wfI
 
 	for _, wi := range items {
 		wiProps := map[string]any{
-			"draft_id":          draftID,
-			"code":              wi.Code,
-			"draft_workflow_id": wfID,
-			"title":             wi.Title,
-			"description":       strings.TrimSpace(wi.Description),
-			"ordinality":        wi.Ordinality,
-			"prompt":            strings.TrimSpace(wi.Prompt),
+			"draft_ref_code":          draftID,
+			"code":                    wi.Code,
+			"draft_workflow_ref_code": wfID,
+			"title":                   wi.Title,
+			"description":             strings.TrimSpace(wi.Description),
+			"ordinality":              wi.Ordinality,
+			"prompt":                  strings.TrimSpace(wi.Prompt),
 		}
 		if wi.AssignedRole != "" {
 			wiProps["assigned_role"] = wi.AssignedRole
@@ -303,7 +303,7 @@ func (imp *Importer) importWorkItems(ctx context.Context, agencyID, draftID, wfI
 }
 
 // importWorkItemInstructions upserts DraftInstruction entities scoped to a
-// work item (draft_work_item_id is set; draft_workflow_id is omitted).
+// work item (draft_work_item_ref_code is set; draft_workflow_ref_code is omitted).
 func (imp *Importer) importWorkItemInstructions(ctx context.Context, agencyID, draftID, wiID string, instructions []InstructionSpec) error {
 	if len(instructions) == 0 {
 		return nil
@@ -311,11 +311,11 @@ func (imp *Importer) importWorkItemInstructions(ctx context.Context, agencyID, d
 	base := imp.url("/agency/", agencyID, "/drafts/", draftID, "/instructions")
 	for _, inst := range instructions {
 		props := map[string]any{
-			"draft_id":           draftID,
-			"code":               inst.Code,
-			"draft_work_item_id": wiID,
-			"content":            strings.TrimSpace(inst.Content),
-			"ordinality":         inst.Ordinality,
+			"draft_ref_code":           draftID,
+			"code":                     inst.Code,
+			"draft_work_item_ref_code": wiID,
+			"content":                  strings.TrimSpace(inst.Content),
+			"ordinality":               inst.Ordinality,
 		}
 		if _, err := imp.postEntity(ctx, base, props); err != nil {
 			return fmt.Errorf("instruction %s: %w", inst.Code, err)
@@ -332,13 +332,13 @@ func (imp *Importer) importDeliverables(ctx context.Context, agencyID, draftID, 
 	base := imp.url("/agency/", agencyID, "/drafts/", draftID, "/deliverables")
 	for _, del := range deliverables {
 		props := map[string]any{
-			"draft_id":           draftID,
-			"code":               del.Code,
-			"draft_work_item_id": wiID,
-			"title":              del.Title,
-			"description":        strings.TrimSpace(del.Description),
-			"ordinality":         del.Ordinality,
-			"blocking":           del.Blocking,
+			"draft_ref_code":           draftID,
+			"code":                     del.Code,
+			"draft_work_item_ref_code": wiID,
+			"title":                    del.Title,
+			"description":              strings.TrimSpace(del.Description),
+			"ordinality":               del.Ordinality,
+			"blocking":                 del.Blocking,
 		}
 		if _, err := imp.postEntity(ctx, base, props); err != nil {
 			return fmt.Errorf("deliverable %s: %w", del.Code, err)
