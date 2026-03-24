@@ -185,6 +185,7 @@ func (imp *Importer) importConfiguredRoles(ctx context.Context, agencyID, draftI
 		props := map[string]any{
 			"draft_ref_code": draftID,
 			"code":           r.Code,
+			"ref_code":       r.RefCode,
 			"name":           r.Name,
 			"description":    strings.TrimSpace(r.Description),
 			"actor_type":     r.ActorType,
@@ -206,6 +207,7 @@ func (imp *Importer) importGoals(ctx context.Context, agencyID, draftID string, 
 		props := map[string]any{
 			"draft_ref_code": draftID,
 			"code":           g.Code,
+			"ref_code":       g.RefCode,
 			"title":          g.Title,
 			"description":    strings.TrimSpace(g.Description),
 			"ordinality":     g.Ordinality,
@@ -227,6 +229,7 @@ func (imp *Importer) importWorkflows(ctx context.Context, agencyID, draftID stri
 		wfProps := map[string]any{
 			"draft_ref_code": draftID,
 			"code":           wf.Code,
+			"ref_code":       wf.RefCode,
 			"name":           wf.Name,
 			"description":    strings.TrimSpace(wf.Description),
 			"ordinality":     wf.Ordinality,
@@ -256,6 +259,7 @@ func (imp *Importer) importWorkflowInstructions(ctx context.Context, agencyID, d
 		props := map[string]any{
 			"draft_ref_code":          draftID,
 			"code":                    inst.Code,
+			"ref_code":                inst.RefCode,
 			"draft_workflow_ref_code": wfID,
 			"content":                 strings.TrimSpace(inst.Content),
 			"ordinality":              inst.Ordinality,
@@ -276,6 +280,7 @@ func (imp *Importer) importWorkItems(ctx context.Context, agencyID, draftID, wfI
 		wiProps := map[string]any{
 			"draft_ref_code":          draftID,
 			"code":                    wi.Code,
+			"ref_code":                wi.RefCode,
 			"draft_workflow_ref_code": wfID,
 			"title":                   wi.Title,
 			"description":             strings.TrimSpace(wi.Description),
@@ -313,6 +318,7 @@ func (imp *Importer) importWorkItemInstructions(ctx context.Context, agencyID, d
 		props := map[string]any{
 			"draft_ref_code":           draftID,
 			"code":                     inst.Code,
+			"ref_code":                 inst.RefCode,
 			"draft_work_item_ref_code": wiID,
 			"content":                  strings.TrimSpace(inst.Content),
 			"ordinality":               inst.Ordinality,
@@ -334,6 +340,7 @@ func (imp *Importer) importDeliverables(ctx context.Context, agencyID, draftID, 
 		props := map[string]any{
 			"draft_ref_code":           draftID,
 			"code":                     del.Code,
+			"ref_code":                 del.RefCode,
 			"draft_work_item_ref_code": wiID,
 			"title":                    del.Title,
 			"description":              strings.TrimSpace(del.Description),

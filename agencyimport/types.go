@@ -28,6 +28,7 @@ type AgencySpec struct {
 type ConfiguredRoleSpec struct {
 	// Code is the UniqueKey component, e.g. "ROLE-001".
 	Code        string `yaml:"code"`
+	RefCode     string `yaml:"ref_code"`
 	Name        string `yaml:"name"`
 	Description string `yaml:"description"`
 	// ActorType is one of: "human", "ai_agent", "compute_agent".
@@ -39,6 +40,7 @@ type ConfiguredRoleSpec struct {
 type GoalSpec struct {
 	// Code is the UniqueKey component, e.g. "GOAL-001".
 	Code        string `yaml:"code"`
+	RefCode     string `yaml:"ref_code"`
 	Title       string `yaml:"title"`
 	Description string `yaml:"description"`
 	Ordinality  int    `yaml:"ordinality"`
@@ -48,6 +50,7 @@ type GoalSpec struct {
 type WorkflowSpec struct {
 	// Code is the UniqueKey component, e.g. "WF-001".
 	Code         string            `yaml:"code"`
+	RefCode      string            `yaml:"ref_code"`
 	Name         string            `yaml:"name"`
 	Description  string            `yaml:"description"`
 	Ordinality   int               `yaml:"ordinality"`
@@ -60,6 +63,7 @@ type WorkflowSpec struct {
 type InstructionSpec struct {
 	// Code is the UniqueKey component, e.g. "INST-WF001-001".
 	Code       string `yaml:"code"`
+	RefCode    string `yaml:"ref_code"`
 	Content    string `yaml:"content"`
 	Ordinality int    `yaml:"ordinality"`
 }
@@ -68,6 +72,7 @@ type InstructionSpec struct {
 type WorkItemSpec struct {
 	// Code is the UniqueKey component, e.g. "WI-001".
 	Code        string `yaml:"code"`
+	RefCode     string `yaml:"ref_code"`
 	Title       string `yaml:"title"`
 	Description string `yaml:"description"`
 	// Ordinality controls sequencing; equal ordinality values run in parallel.
@@ -84,6 +89,7 @@ type WorkItemSpec struct {
 type DeliverableSpec struct {
 	// Code is the UniqueKey component, e.g. "DEL-WI001-001".
 	Code        string `yaml:"code"`
+	RefCode     string `yaml:"ref_code"`
 	Title       string `yaml:"title"`
 	Description string `yaml:"description"`
 	Ordinality  int    `yaml:"ordinality"`
