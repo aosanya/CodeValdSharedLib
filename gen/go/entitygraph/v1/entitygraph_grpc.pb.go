@@ -33,6 +33,8 @@ const (
 	EntityService_ListRelationships_FullMethodName  = "/entitygraph.v1.EntityService/ListRelationships"
 	EntityService_CreateRelationship_FullMethodName = "/entitygraph.v1.EntityService/CreateRelationship"
 	EntityService_DeleteRelationship_FullMethodName = "/entitygraph.v1.EntityService/DeleteRelationship"
+	EntityService_GetRelationship_FullMethodName    = "/entitygraph.v1.EntityService/GetRelationship"
+	EntityService_TraverseGraph_FullMethodName      = "/entitygraph.v1.EntityService/TraverseGraph"
 )
 
 // EntityServiceClient is the client API for EntityService service.
@@ -62,6 +64,11 @@ type EntityServiceClient interface {
 	CreateRelationship(ctx context.Context, in *CreateRelationshipRequest, opts ...grpc.CallOption) (*RelationshipItem, error)
 	// DeleteRelationship removes a directed edge by its ID.
 	DeleteRelationship(ctx context.Context, in *DeleteRelationshipRequest, opts ...grpc.CallOption) (*DeleteRelationshipResponse, error)
+	// GetRelationship retrieves a single relationship by its ID.
+	GetRelationship(ctx context.Context, in *GetRelationshipRequest, opts ...grpc.CallOption) (*RelationshipItem, error)
+	// TraverseGraph walks the entity graph from start_id and returns all
+	// reachable vertices and traversed edges up to the given depth.
+	TraverseGraph(ctx context.Context, in *TraverseGraphRequest, opts ...grpc.CallOption) (*TraverseGraphResponse, error)
 }
 
 type entityServiceClient struct {
@@ -152,6 +159,26 @@ func (c *entityServiceClient) DeleteRelationship(ctx context.Context, in *Delete
 	return out, nil
 }
 
+func (c *entityServiceClient) GetRelationship(ctx context.Context, in *GetRelationshipRequest, opts ...grpc.CallOption) (*RelationshipItem, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RelationshipItem)
+	err := c.cc.Invoke(ctx, EntityService_GetRelationship_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *entityServiceClient) TraverseGraph(ctx context.Context, in *TraverseGraphRequest, opts ...grpc.CallOption) (*TraverseGraphResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(TraverseGraphResponse)
+	err := c.cc.Invoke(ctx, EntityService_TraverseGraph_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // EntityServiceServer is the server API for EntityService service.
 // All implementations must embed UnimplementedEntityServiceServer
 // for forward compatibility.
@@ -179,6 +206,11 @@ type EntityServiceServer interface {
 	CreateRelationship(context.Context, *CreateRelationshipRequest) (*RelationshipItem, error)
 	// DeleteRelationship removes a directed edge by its ID.
 	DeleteRelationship(context.Context, *DeleteRelationshipRequest) (*DeleteRelationshipResponse, error)
+	// GetRelationship retrieves a single relationship by its ID.
+	GetRelationship(context.Context, *GetRelationshipRequest) (*RelationshipItem, error)
+	// TraverseGraph walks the entity graph from start_id and returns all
+	// reachable vertices and traversed edges up to the given depth.
+	TraverseGraph(context.Context, *TraverseGraphRequest) (*TraverseGraphResponse, error)
 	mustEmbedUnimplementedEntityServiceServer()
 }
 
@@ -212,6 +244,12 @@ func (UnimplementedEntityServiceServer) CreateRelationship(context.Context, *Cre
 }
 func (UnimplementedEntityServiceServer) DeleteRelationship(context.Context, *DeleteRelationshipRequest) (*DeleteRelationshipResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method DeleteRelationship not implemented")
+}
+func (UnimplementedEntityServiceServer) GetRelationship(context.Context, *GetRelationshipRequest) (*RelationshipItem, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetRelationship not implemented")
+}
+func (UnimplementedEntityServiceServer) TraverseGraph(context.Context, *TraverseGraphRequest) (*TraverseGraphResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method TraverseGraph not implemented")
 }
 func (UnimplementedEntityServiceServer) mustEmbedUnimplementedEntityServiceServer() {}
 func (UnimplementedEntityServiceServer) testEmbeddedByValue()                       {}
@@ -378,6 +416,42 @@ func _EntityService_DeleteRelationship_Handler(srv interface{}, ctx context.Cont
 	return interceptor(ctx, in, info, handler)
 }
 
+func _EntityService_GetRelationship_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetRelationshipRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EntityServiceServer).GetRelationship(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: EntityService_GetRelationship_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EntityServiceServer).GetRelationship(ctx, req.(*GetRelationshipRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _EntityService_TraverseGraph_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TraverseGraphRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EntityServiceServer).TraverseGraph(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: EntityService_TraverseGraph_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EntityServiceServer).TraverseGraph(ctx, req.(*TraverseGraphRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // EntityService_ServiceDesc is the grpc.ServiceDesc for EntityService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -416,6 +490,14 @@ var EntityService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteRelationship",
 			Handler:    _EntityService_DeleteRelationship_Handler,
+		},
+		{
+			MethodName: "GetRelationship",
+			Handler:    _EntityService_GetRelationship_Handler,
+		},
+		{
+			MethodName: "TraverseGraph",
+			Handler:    _EntityService_TraverseGraph_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

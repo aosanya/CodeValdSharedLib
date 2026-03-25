@@ -123,6 +123,31 @@ message DeleteRelationshipRequest {
 // DeleteRelationshipResponse is intentionally empty.
 message DeleteRelationshipResponse {}
 
+// GetRelationshipRequest retrieves a single relationship by its ID.
+message GetRelationshipRequest {
+  string agency_id       = 1;
+  string relationship_id = 2;
+}
+
+// TraverseGraphRequest walks the entity graph from a starting entity.
+// direction must be one of "outbound", "inbound", or "any".
+// depth of 0 is treated as 1.
+// names restricts traversal to edges whose name is in the list;
+// an empty list follows all edge types.
+message TraverseGraphRequest {
+  string          agency_id = 1;
+  string          start_id  = 2;
+  string          direction = 3;
+  int32           depth     = 4;
+  repeated string names     = 5;
+}
+
+// TraverseGraphResponse contains all reachable vertices and traversed edges.
+message TraverseGraphResponse {
+  repeated EntityItem       vertices = 1;
+  repeated RelationshipItem edges    = 2;
+}
+
 // ── Service ───────────────────────────────────────────────────────────────────
 
 // EntityService provides generic CRUD for entities and relationships managed
@@ -155,4 +180,11 @@ service EntityService {
 
   // DeleteRelationship removes a directed edge by its ID.
   rpc DeleteRelationship(DeleteRelationshipRequest) returns (DeleteRelationshipResponse);
+
+  // GetRelationship retrieves a single relationship by its ID.
+  rpc GetRelationship(GetRelationshipRequest) returns (RelationshipItem);
+
+  // TraverseGraph walks the entity graph from start_id and returns all
+  // reachable vertices and traversed edges up to the given depth.
+  rpc TraverseGraph(TraverseGraphRequest) returns (TraverseGraphResponse);
 }

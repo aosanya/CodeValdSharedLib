@@ -165,6 +165,48 @@ func (s *EntityServer) DeleteRelationship(ctx context.Context, req *pb.DeleteRel
 	return &pb.DeleteRelationshipResponse{}, nil
 }
 
+// GetRelationship implements pb.EntityServiceServer.
+func (s *EntityServer) GetRelationship(ctx context.Context, req *pb.GetRelationshipRequest) (*pb.RelationshipItem, error) {
+	rel, err := s.dm.GetRelationship(ctx, req.GetAgencyId(), req.GetRelationshipId())
+	if err != nil {
+		return nil, toGRPCError(err)
+	}
+	return relationshipToProto(rel)
+}
+
+// TraverseGraph implements pb.EntityServiceServer.
+// It walks the entity graph from start_id and returns all reachable vertices
+// and traversed edges up to the configured depth.
+func (s *EntityServer) TraverseGraph(ctx context.Context, req *pb.TraverseGraphRequest) (*pb.TraverseGraphResponse, error) {
+	result, err := s.dm.TraverseGraph(ctx, entitygraph.TraverseGraphRequest{
+		AgencyID:  req.GetAgencyId(),
+		StartID:   req.GetStartId(),
+		Direction: req.GetDirection(),
+		Depth:     int(req.GetDepth()),
+		Names:     req.GetNames(),
+	})
+	if err != nil {
+		return nil, toGRPCError(err)
+	}
+	vertices := make([]*pb.EntityItem, 0, len(result.Vertices))
+	for _, e := range result.Vertices {
+		item, convErr := entityToProto(e)
+		if convErr != nil {
+			return nil, toGRPCError(convErr)
+		}
+		vertices = append(vertices, item)
+	}
+	edges := make([]*pb.RelationshipItem, 0, len(result.Edges))
+	for _, r := range result.Edges {
+		edge, convErr := relationshipToProto(r)
+		if convErr != nil {
+			return nil, toGRPCError(convErr)
+		}
+		edges = append(edges, edge)
+	}
+	return &pb.TraverseGraphResponse{Vertices: vertices, Edges: edges}, nil
+}
+
 // ── Conversion helpers ────────────────────────────────────────────────────────
 
 // entityToProto converts an entitygraph.Entity to its proto representation.

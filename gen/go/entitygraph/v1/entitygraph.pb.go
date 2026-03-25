@@ -887,6 +887,193 @@ func (*DeleteRelationshipResponse) Descriptor() ([]byte, []int) {
 	return file_entitygraph_v1_entitygraph_proto_rawDescGZIP(), []int{13}
 }
 
+// GetRelationshipRequest retrieves a single relationship by its ID.
+type GetRelationshipRequest struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	AgencyId       string                 `protobuf:"bytes,1,opt,name=agency_id,json=agencyId,proto3" json:"agency_id,omitempty"`
+	RelationshipId string                 `protobuf:"bytes,2,opt,name=relationship_id,json=relationshipId,proto3" json:"relationship_id,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *GetRelationshipRequest) Reset() {
+	*x = GetRelationshipRequest{}
+	mi := &file_entitygraph_v1_entitygraph_proto_msgTypes[14]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetRelationshipRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetRelationshipRequest) ProtoMessage() {}
+
+func (x *GetRelationshipRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_entitygraph_v1_entitygraph_proto_msgTypes[14]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetRelationshipRequest.ProtoReflect.Descriptor instead.
+func (*GetRelationshipRequest) Descriptor() ([]byte, []int) {
+	return file_entitygraph_v1_entitygraph_proto_rawDescGZIP(), []int{14}
+}
+
+func (x *GetRelationshipRequest) GetAgencyId() string {
+	if x != nil {
+		return x.AgencyId
+	}
+	return ""
+}
+
+func (x *GetRelationshipRequest) GetRelationshipId() string {
+	if x != nil {
+		return x.RelationshipId
+	}
+	return ""
+}
+
+// TraverseGraphRequest walks the entity graph from a starting entity.
+// direction must be one of "outbound", "inbound", or "any".
+// depth of 0 is treated as 1.
+// names restricts traversal to edges whose name is in the list;
+// an empty list follows all edge types.
+type TraverseGraphRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	AgencyId      string                 `protobuf:"bytes,1,opt,name=agency_id,json=agencyId,proto3" json:"agency_id,omitempty"`
+	StartId       string                 `protobuf:"bytes,2,opt,name=start_id,json=startId,proto3" json:"start_id,omitempty"`
+	Direction     string                 `protobuf:"bytes,3,opt,name=direction,proto3" json:"direction,omitempty"`
+	Depth         int32                  `protobuf:"varint,4,opt,name=depth,proto3" json:"depth,omitempty"`
+	Names         []string               `protobuf:"bytes,5,rep,name=names,proto3" json:"names,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *TraverseGraphRequest) Reset() {
+	*x = TraverseGraphRequest{}
+	mi := &file_entitygraph_v1_entitygraph_proto_msgTypes[15]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *TraverseGraphRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TraverseGraphRequest) ProtoMessage() {}
+
+func (x *TraverseGraphRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_entitygraph_v1_entitygraph_proto_msgTypes[15]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use TraverseGraphRequest.ProtoReflect.Descriptor instead.
+func (*TraverseGraphRequest) Descriptor() ([]byte, []int) {
+	return file_entitygraph_v1_entitygraph_proto_rawDescGZIP(), []int{15}
+}
+
+func (x *TraverseGraphRequest) GetAgencyId() string {
+	if x != nil {
+		return x.AgencyId
+	}
+	return ""
+}
+
+func (x *TraverseGraphRequest) GetStartId() string {
+	if x != nil {
+		return x.StartId
+	}
+	return ""
+}
+
+func (x *TraverseGraphRequest) GetDirection() string {
+	if x != nil {
+		return x.Direction
+	}
+	return ""
+}
+
+func (x *TraverseGraphRequest) GetDepth() int32 {
+	if x != nil {
+		return x.Depth
+	}
+	return 0
+}
+
+func (x *TraverseGraphRequest) GetNames() []string {
+	if x != nil {
+		return x.Names
+	}
+	return nil
+}
+
+// TraverseGraphResponse contains all reachable vertices and traversed edges.
+type TraverseGraphResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Vertices      []*EntityItem          `protobuf:"bytes,1,rep,name=vertices,proto3" json:"vertices,omitempty"`
+	Edges         []*RelationshipItem    `protobuf:"bytes,2,rep,name=edges,proto3" json:"edges,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *TraverseGraphResponse) Reset() {
+	*x = TraverseGraphResponse{}
+	mi := &file_entitygraph_v1_entitygraph_proto_msgTypes[16]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *TraverseGraphResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TraverseGraphResponse) ProtoMessage() {}
+
+func (x *TraverseGraphResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_entitygraph_v1_entitygraph_proto_msgTypes[16]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use TraverseGraphResponse.ProtoReflect.Descriptor instead.
+func (*TraverseGraphResponse) Descriptor() ([]byte, []int) {
+	return file_entitygraph_v1_entitygraph_proto_rawDescGZIP(), []int{16}
+}
+
+func (x *TraverseGraphResponse) GetVertices() []*EntityItem {
+	if x != nil {
+		return x.Vertices
+	}
+	return nil
+}
+
+func (x *TraverseGraphResponse) GetEdges() []*RelationshipItem {
+	if x != nil {
+		return x.Edges
+	}
+	return nil
+}
+
 var File_entitygraph_v1_entitygraph_proto protoreflect.FileDescriptor
 
 const file_entitygraph_v1_entitygraph_proto_rawDesc = "" +
@@ -962,7 +1149,19 @@ const file_entitygraph_v1_entitygraph_proto_rawDesc = "" +
 	"\tagency_id\x18\x01 \x01(\tR\bagencyId\x12\x1b\n" +
 	"\tentity_id\x18\x02 \x01(\tR\bentityId\x12'\n" +
 	"\x0frelationship_id\x18\x03 \x01(\tR\x0erelationshipId\"\x1c\n" +
-	"\x1aDeleteRelationshipResponse2\xec\x05\n" +
+	"\x1aDeleteRelationshipResponse\"^\n" +
+	"\x16GetRelationshipRequest\x12\x1b\n" +
+	"\tagency_id\x18\x01 \x01(\tR\bagencyId\x12'\n" +
+	"\x0frelationship_id\x18\x02 \x01(\tR\x0erelationshipId\"\x98\x01\n" +
+	"\x14TraverseGraphRequest\x12\x1b\n" +
+	"\tagency_id\x18\x01 \x01(\tR\bagencyId\x12\x19\n" +
+	"\bstart_id\x18\x02 \x01(\tR\astartId\x12\x1c\n" +
+	"\tdirection\x18\x03 \x01(\tR\tdirection\x12\x14\n" +
+	"\x05depth\x18\x04 \x01(\x05R\x05depth\x12\x14\n" +
+	"\x05names\x18\x05 \x03(\tR\x05names\"\x87\x01\n" +
+	"\x15TraverseGraphResponse\x126\n" +
+	"\bvertices\x18\x01 \x03(\v2\x1a.entitygraph.v1.EntityItemR\bvertices\x126\n" +
+	"\x05edges\x18\x02 \x03(\v2 .entitygraph.v1.RelationshipItemR\x05edges2\xa7\a\n" +
 	"\rEntityService\x12Y\n" +
 	"\fListEntities\x12#.entitygraph.v1.ListEntitiesRequest\x1a$.entitygraph.v1.ListEntitiesResponse\x12O\n" +
 	"\fCreateEntity\x12#.entitygraph.v1.CreateEntityRequest\x1a\x1a.entitygraph.v1.EntityItem\x12I\n" +
@@ -971,7 +1170,9 @@ const file_entitygraph_v1_entitygraph_proto_rawDesc = "" +
 	"\fDeleteEntity\x12#.entitygraph.v1.DeleteEntityRequest\x1a$.entitygraph.v1.DeleteEntityResponse\x12h\n" +
 	"\x11ListRelationships\x12(.entitygraph.v1.ListRelationshipsRequest\x1a).entitygraph.v1.ListRelationshipsResponse\x12a\n" +
 	"\x12CreateRelationship\x12).entitygraph.v1.CreateRelationshipRequest\x1a .entitygraph.v1.RelationshipItem\x12k\n" +
-	"\x12DeleteRelationship\x12).entitygraph.v1.DeleteRelationshipRequest\x1a*.entitygraph.v1.DeleteRelationshipResponseBJZHgithub.com/aosanya/CodeValdSharedLib/gen/go/entitygraph/v1;entitygraphv1b\x06proto3"
+	"\x12DeleteRelationship\x12).entitygraph.v1.DeleteRelationshipRequest\x1a*.entitygraph.v1.DeleteRelationshipResponse\x12[\n" +
+	"\x0fGetRelationship\x12&.entitygraph.v1.GetRelationshipRequest\x1a .entitygraph.v1.RelationshipItem\x12\\\n" +
+	"\rTraverseGraph\x12$.entitygraph.v1.TraverseGraphRequest\x1a%.entitygraph.v1.TraverseGraphResponseBJZHgithub.com/aosanya/CodeValdSharedLib/gen/go/entitygraph/v1;entitygraphv1b\x06proto3"
 
 var (
 	file_entitygraph_v1_entitygraph_proto_rawDescOnce sync.Once
@@ -985,7 +1186,7 @@ func file_entitygraph_v1_entitygraph_proto_rawDescGZIP() []byte {
 	return file_entitygraph_v1_entitygraph_proto_rawDescData
 }
 
-var file_entitygraph_v1_entitygraph_proto_msgTypes = make([]protoimpl.MessageInfo, 14)
+var file_entitygraph_v1_entitygraph_proto_msgTypes = make([]protoimpl.MessageInfo, 17)
 var file_entitygraph_v1_entitygraph_proto_goTypes = []any{
 	(*EntityItem)(nil),                 // 0: entitygraph.v1.EntityItem
 	(*RelationshipItem)(nil),           // 1: entitygraph.v1.RelationshipItem
@@ -1001,42 +1202,51 @@ var file_entitygraph_v1_entitygraph_proto_goTypes = []any{
 	(*CreateRelationshipRequest)(nil),  // 11: entitygraph.v1.CreateRelationshipRequest
 	(*DeleteRelationshipRequest)(nil),  // 12: entitygraph.v1.DeleteRelationshipRequest
 	(*DeleteRelationshipResponse)(nil), // 13: entitygraph.v1.DeleteRelationshipResponse
-	(*structpb.Struct)(nil),            // 14: google.protobuf.Struct
-	(*timestamppb.Timestamp)(nil),      // 15: google.protobuf.Timestamp
+	(*GetRelationshipRequest)(nil),     // 14: entitygraph.v1.GetRelationshipRequest
+	(*TraverseGraphRequest)(nil),       // 15: entitygraph.v1.TraverseGraphRequest
+	(*TraverseGraphResponse)(nil),      // 16: entitygraph.v1.TraverseGraphResponse
+	(*structpb.Struct)(nil),            // 17: google.protobuf.Struct
+	(*timestamppb.Timestamp)(nil),      // 18: google.protobuf.Timestamp
 }
 var file_entitygraph_v1_entitygraph_proto_depIdxs = []int32{
-	14, // 0: entitygraph.v1.EntityItem.properties:type_name -> google.protobuf.Struct
-	15, // 1: entitygraph.v1.EntityItem.created_at:type_name -> google.protobuf.Timestamp
-	15, // 2: entitygraph.v1.EntityItem.updated_at:type_name -> google.protobuf.Timestamp
-	14, // 3: entitygraph.v1.RelationshipItem.properties:type_name -> google.protobuf.Struct
-	15, // 4: entitygraph.v1.RelationshipItem.created_at:type_name -> google.protobuf.Timestamp
-	14, // 5: entitygraph.v1.ListEntitiesRequest.properties:type_name -> google.protobuf.Struct
+	17, // 0: entitygraph.v1.EntityItem.properties:type_name -> google.protobuf.Struct
+	18, // 1: entitygraph.v1.EntityItem.created_at:type_name -> google.protobuf.Timestamp
+	18, // 2: entitygraph.v1.EntityItem.updated_at:type_name -> google.protobuf.Timestamp
+	17, // 3: entitygraph.v1.RelationshipItem.properties:type_name -> google.protobuf.Struct
+	18, // 4: entitygraph.v1.RelationshipItem.created_at:type_name -> google.protobuf.Timestamp
+	17, // 5: entitygraph.v1.ListEntitiesRequest.properties:type_name -> google.protobuf.Struct
 	0,  // 6: entitygraph.v1.ListEntitiesResponse.entities:type_name -> entitygraph.v1.EntityItem
-	14, // 7: entitygraph.v1.CreateEntityRequest.properties:type_name -> google.protobuf.Struct
-	14, // 8: entitygraph.v1.UpdateEntityRequest.properties:type_name -> google.protobuf.Struct
+	17, // 7: entitygraph.v1.CreateEntityRequest.properties:type_name -> google.protobuf.Struct
+	17, // 8: entitygraph.v1.UpdateEntityRequest.properties:type_name -> google.protobuf.Struct
 	1,  // 9: entitygraph.v1.ListRelationshipsResponse.relationships:type_name -> entitygraph.v1.RelationshipItem
-	14, // 10: entitygraph.v1.CreateRelationshipRequest.properties:type_name -> google.protobuf.Struct
-	2,  // 11: entitygraph.v1.EntityService.ListEntities:input_type -> entitygraph.v1.ListEntitiesRequest
-	4,  // 12: entitygraph.v1.EntityService.CreateEntity:input_type -> entitygraph.v1.CreateEntityRequest
-	5,  // 13: entitygraph.v1.EntityService.GetEntity:input_type -> entitygraph.v1.GetEntityRequest
-	6,  // 14: entitygraph.v1.EntityService.UpdateEntity:input_type -> entitygraph.v1.UpdateEntityRequest
-	7,  // 15: entitygraph.v1.EntityService.DeleteEntity:input_type -> entitygraph.v1.DeleteEntityRequest
-	9,  // 16: entitygraph.v1.EntityService.ListRelationships:input_type -> entitygraph.v1.ListRelationshipsRequest
-	11, // 17: entitygraph.v1.EntityService.CreateRelationship:input_type -> entitygraph.v1.CreateRelationshipRequest
-	12, // 18: entitygraph.v1.EntityService.DeleteRelationship:input_type -> entitygraph.v1.DeleteRelationshipRequest
-	3,  // 19: entitygraph.v1.EntityService.ListEntities:output_type -> entitygraph.v1.ListEntitiesResponse
-	0,  // 20: entitygraph.v1.EntityService.CreateEntity:output_type -> entitygraph.v1.EntityItem
-	0,  // 21: entitygraph.v1.EntityService.GetEntity:output_type -> entitygraph.v1.EntityItem
-	0,  // 22: entitygraph.v1.EntityService.UpdateEntity:output_type -> entitygraph.v1.EntityItem
-	8,  // 23: entitygraph.v1.EntityService.DeleteEntity:output_type -> entitygraph.v1.DeleteEntityResponse
-	10, // 24: entitygraph.v1.EntityService.ListRelationships:output_type -> entitygraph.v1.ListRelationshipsResponse
-	1,  // 25: entitygraph.v1.EntityService.CreateRelationship:output_type -> entitygraph.v1.RelationshipItem
-	13, // 26: entitygraph.v1.EntityService.DeleteRelationship:output_type -> entitygraph.v1.DeleteRelationshipResponse
-	19, // [19:27] is the sub-list for method output_type
-	11, // [11:19] is the sub-list for method input_type
-	11, // [11:11] is the sub-list for extension type_name
-	11, // [11:11] is the sub-list for extension extendee
-	0,  // [0:11] is the sub-list for field type_name
+	17, // 10: entitygraph.v1.CreateRelationshipRequest.properties:type_name -> google.protobuf.Struct
+	0,  // 11: entitygraph.v1.TraverseGraphResponse.vertices:type_name -> entitygraph.v1.EntityItem
+	1,  // 12: entitygraph.v1.TraverseGraphResponse.edges:type_name -> entitygraph.v1.RelationshipItem
+	2,  // 13: entitygraph.v1.EntityService.ListEntities:input_type -> entitygraph.v1.ListEntitiesRequest
+	4,  // 14: entitygraph.v1.EntityService.CreateEntity:input_type -> entitygraph.v1.CreateEntityRequest
+	5,  // 15: entitygraph.v1.EntityService.GetEntity:input_type -> entitygraph.v1.GetEntityRequest
+	6,  // 16: entitygraph.v1.EntityService.UpdateEntity:input_type -> entitygraph.v1.UpdateEntityRequest
+	7,  // 17: entitygraph.v1.EntityService.DeleteEntity:input_type -> entitygraph.v1.DeleteEntityRequest
+	9,  // 18: entitygraph.v1.EntityService.ListRelationships:input_type -> entitygraph.v1.ListRelationshipsRequest
+	11, // 19: entitygraph.v1.EntityService.CreateRelationship:input_type -> entitygraph.v1.CreateRelationshipRequest
+	12, // 20: entitygraph.v1.EntityService.DeleteRelationship:input_type -> entitygraph.v1.DeleteRelationshipRequest
+	14, // 21: entitygraph.v1.EntityService.GetRelationship:input_type -> entitygraph.v1.GetRelationshipRequest
+	15, // 22: entitygraph.v1.EntityService.TraverseGraph:input_type -> entitygraph.v1.TraverseGraphRequest
+	3,  // 23: entitygraph.v1.EntityService.ListEntities:output_type -> entitygraph.v1.ListEntitiesResponse
+	0,  // 24: entitygraph.v1.EntityService.CreateEntity:output_type -> entitygraph.v1.EntityItem
+	0,  // 25: entitygraph.v1.EntityService.GetEntity:output_type -> entitygraph.v1.EntityItem
+	0,  // 26: entitygraph.v1.EntityService.UpdateEntity:output_type -> entitygraph.v1.EntityItem
+	8,  // 27: entitygraph.v1.EntityService.DeleteEntity:output_type -> entitygraph.v1.DeleteEntityResponse
+	10, // 28: entitygraph.v1.EntityService.ListRelationships:output_type -> entitygraph.v1.ListRelationshipsResponse
+	1,  // 29: entitygraph.v1.EntityService.CreateRelationship:output_type -> entitygraph.v1.RelationshipItem
+	13, // 30: entitygraph.v1.EntityService.DeleteRelationship:output_type -> entitygraph.v1.DeleteRelationshipResponse
+	1,  // 31: entitygraph.v1.EntityService.GetRelationship:output_type -> entitygraph.v1.RelationshipItem
+	16, // 32: entitygraph.v1.EntityService.TraverseGraph:output_type -> entitygraph.v1.TraverseGraphResponse
+	23, // [23:33] is the sub-list for method output_type
+	13, // [13:23] is the sub-list for method input_type
+	13, // [13:13] is the sub-list for extension type_name
+	13, // [13:13] is the sub-list for extension extendee
+	0,  // [0:13] is the sub-list for field type_name
 }
 
 func init() { file_entitygraph_v1_entitygraph_proto_init() }
@@ -1050,7 +1260,7 @@ func file_entitygraph_v1_entitygraph_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_entitygraph_v1_entitygraph_proto_rawDesc), len(file_entitygraph_v1_entitygraph_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   14,
+			NumMessages:   17,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
