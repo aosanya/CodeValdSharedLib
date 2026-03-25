@@ -236,6 +236,40 @@ var (
 )
 ```
 
+#### `entitygraph/server` — Generic EntityService gRPC Handler
+
+Pre-built gRPC handler that any CodeVald service can register to expose the
+shared `EntityService` API without writing its own handler code.
+
+```go
+// NewEntityServer returns an EntityServer backed by the supplied DataManager.
+// Register with: entitygraphpb.RegisterEntityServiceServer(grpcServer, NewEntityServer(dm))
+func NewEntityServer(dm entitygraph.DataManager) *EntityServer
+
+// GRPCServicePath is the canonical full-qualified gRPC service path.
+// Pass this constant to schemaroutes.RoutesFromSchema and any other place that
+// declares entity HTTP routes to Cross — never hardcode the raw string.
+const GRPCServicePath = "/entitygraph.v1.EntityService"
+```
+
+`EntityServer` implements all 8 RPCs (CreateEntity, GetEntity, UpdateEntity,
+DeleteEntity, ListEntities, CreateRelationship, GetRelationship,
+DeleteRelationship) by delegating to the injected `DataManager`. The internal
+`toGRPCError` function maps every `entitygraph` error to a well-typed gRPC
+status code — consuming services do **not** repeat this mapping.
+
+#### `entitygraph/seed` — Schema Seed Utility
+
+Idempotent startup helper; replaces the per-service `seedSchemaIfNeeded` that
+previously lived in each service's `cmd/main.go`.
+
+```go
+// SeedSchema seeds schema for agencyID if no active schema version exists.
+// It calls SetSchema → Publish → Activate(1) in sequence and is safe to call
+// on every service restart.
+func SeedSchema(ctx context.Context, sm SchemaManager, agencyID string, schema types.Schema) error
+```
+
 ---
 
 ### `schemaroutes` — Schema-Driven Route Generation
@@ -270,9 +304,9 @@ Routes generated **per RelationshipDefinition** with a non-empty `PathSegment`:
 | `POST` | `…/{td.EntityIDParam}/{rel.PathSegment}` | `CreateRelationship` | `name = rel.Name` |
 | `DELETE` | `…/{td.EntityIDParam}/{rel.PathSegment}/{relId}` | `DeleteRelationship` | _(none)_ |
 
-Currently consumed by **CodeValdAgency** (via `DefaultAgencySchema()`). Any
-future service backed by `entitygraph` can call this function with its own
-schema and gRPC service path.
+Currently consumed by **CodeValdAgency**, **CodeValdDT**, and **CodeValdComm**.
+Any future service backed by `entitygraph` can call this function with its own
+schema and `egserver.GRPCServicePath` as the `grpcService` argument.
 
 ---
 
@@ -292,19 +326,29 @@ github.com/aosanya/CodeValdSharedLib/
 │   ├── types.go              ← PathBinding, RouteInfo, ServiceRegistration
 │   └── schema.go             ← PropertyType, TypeDefinition, Schema, …
 ├── entitygraph/
-│   └── entitygraph.go        ← DataManager, SchemaManager interfaces + all models
+│   ├── entitygraph.go        ← DataManager, SchemaManager interfaces + all models
+│   ├── seed.go               ← SeedSchema(ctx, sm, agencyID, schema) utility
+│   └── server/
+│       └── server.go         ← EntityServer gRPC handler + GRPCServicePath constant
 ├── schemaroutes/
 │   └── schemaroutes.go       ← RoutesFromSchema: auto-generates RouteInfo slices from types.Schema
 ├── proto/
-│   └── codevaldcross/
+│   ├── codevaldcross/
+│   │   └── v1/
+│   │       └── orchestrator.proto
+│   └── entitygraph/
 │       └── v1/
-│           └── orchestrator.proto
+│           └── entitygraph.proto  ← canonical EntityService proto (8 RPCs)
 └── gen/
     └── go/
-        └── codevaldcross/
+        ├── codevaldcross/
+        │   └── v1/
+        │       ├── orchestrator.pb.go
+        │       └── orchestrator_grpc.pb.go
+        └── entitygraph/
             └── v1/
-                ├── orchestrator.pb.go
-                └── orchestrator_grpc.pb.go
+                ├── entitygraph.pb.go      ← do not hand-edit
+                └── entitygraph_grpc.pb.go ← do not hand-edit
 ```
 
 ---
