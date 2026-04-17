@@ -130,6 +130,18 @@ type RelationshipDefinition struct {
 	// Must be lowercase, hyphen-separated, and unique within the owning TypeDefinition.
 	// If empty, no sub-resource routes are generated for this relationship.
 	PathSegment string
+
+	// Properties is the ordered list of property definitions carried on edge
+	// documents of this relationship type. When non-empty, DataManager
+	// implementations store these fields alongside _from/_to in the edge
+	// collection. The inverse edge (if Inverse is set) receives the same
+	// Properties map so that callers traversing in either direction see
+	// identical metadata.
+	//
+	// Example: a "references" relationship can carry a "descriptor" string
+	// property whose value is an open-vocabulary label such as "documents",
+	// "depends_on", "contradicts", or "references".
+	Properties []PropertyDefinition
 }
 
 // TypeDefinition declares a named class of entity within a [Schema].
