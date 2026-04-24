@@ -31,14 +31,15 @@ func TestPathBinding_JSONRoundTrip(t *testing.T) {
 
 func TestRouteInfo_JSONRoundTrip(t *testing.T) {
 	original := types.RouteInfo{
-		Method:     "GET",
+		Method:     "POST",
 		Pattern:    "/{agencyId}/tasks/{taskId}/files",
-		Capability: "list_task_files",
-		GrpcMethod: "/codevaldwork.v1.TaskService/ListTaskFiles",
+		Capability: "create_task_file",
+		GrpcMethod: "/codevaldwork.v1.TaskService/CreateTaskFile",
 		PathBindings: []types.PathBinding{
 			{URLParam: "agencyId", Field: "agency_id"},
 			{URLParam: "taskId", Field: "task_id"},
 		},
+		IsWrite: true,
 	}
 
 	data, err := json.Marshal(original)
@@ -52,7 +53,8 @@ func TestRouteInfo_JSONRoundTrip(t *testing.T) {
 	}
 
 	if got.Method != original.Method || got.Pattern != original.Pattern ||
-		got.Capability != original.Capability || got.GrpcMethod != original.GrpcMethod {
+		got.Capability != original.Capability || got.GrpcMethod != original.GrpcMethod ||
+		got.IsWrite != original.IsWrite {
 		t.Errorf("RouteInfo fields mismatch: got %+v, want %+v", got, original)
 	}
 	if len(got.PathBindings) != len(original.PathBindings) {
@@ -71,15 +73,34 @@ func TestRouteInfo_OmitEmpty(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Marshal: %v", err)
 	}
-	// capability, grpc_method, path_bindings must not appear when empty
+	// capability, grpc_method, path_bindings, is_write must not appear when empty
 	var m map[string]any
 	if err := json.Unmarshal(data, &m); err != nil {
 		t.Fatalf("Unmarshal map: %v", err)
 	}
-	for _, key := range []string{"capability", "grpc_method", "path_bindings"} {
+	for _, key := range []string{"capability", "grpc_method", "path_bindings", "is_write"} {
 		if _, ok := m[key]; ok {
 			t.Errorf("expected key %q to be omitted when empty, but it was present", key)
 		}
+	}
+}
+
+func TestRouteInfo_IsWriteSerialised(t *testing.T) {
+	r := types.RouteInfo{Method: "POST", Pattern: "/tasks", IsWrite: true}
+	data, err := json.Marshal(r)
+	if err != nil {
+		t.Fatalf("Marshal: %v", err)
+	}
+	var m map[string]any
+	if err := json.Unmarshal(data, &m); err != nil {
+		t.Fatalf("Unmarshal map: %v", err)
+	}
+	v, ok := m["is_write"]
+	if !ok {
+		t.Fatal(`expected "is_write" key present when IsWrite=true`)
+	}
+	if b, _ := v.(bool); !b {
+		t.Errorf(`expected "is_write"=true, got %v`, v)
 	}
 }
 

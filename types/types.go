@@ -53,6 +53,13 @@ type RouteInfo struct {
 	// dispatch time. Used to carry type_id, relationship name, and similar
 	// values that are known at route-declaration time.
 	ConstantBindings []ConstantBinding `json:"constant_bindings,omitempty"`
+	// IsWrite reports whether this route mutates state. Services declare it so
+	// that CodeValdCross's interim HTTP Basic-auth gate can distinguish writes
+	// from POST-based reads (e.g. "search" / "query" endpoints whose payloads
+	// do not fit in a URL). Zero value (false) is the safe default for reads;
+	// services must explicitly opt routes in as writes. See
+	// documentation/2-SoftwareDesignAndArchitecture/reference/route-write-classification.md.
+	IsWrite bool `json:"is_write,omitempty"`
 }
 
 // ServiceRegistration is the Go domain representation of a downstream service's

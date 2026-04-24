@@ -63,6 +63,14 @@ message RouteDeclaration {
   // routes backed by generic RPCs (e.g. ListEntities, CreateEntity) carry
   // type metadata without exposing it to HTTP callers.
   repeated ConstantBinding constant_bindings = 6;
+
+  // is_write reports whether invoking this route mutates state. Services
+  // declare it so that CodeValdCross's interim HTTP Basic-auth gate can
+  // distinguish writes from POST-based reads (e.g. "search" / "query"
+  // endpoints whose payloads do not fit in a URL). Zero value (false) is
+  // the safe default for reads; services must explicitly opt routes in
+  // as writes.
+  bool is_write = 7;
 }
 
 // RegisterRequest carries the service identity and its pub/sub topic contracts.
