@@ -99,6 +99,7 @@ func RoutesFromSchema(schema types.Schema, basePath, agencyIDParam, grpcService 
 			GrpcMethod:       grpcService + "/CreateEntity",
 			PathBindings:     []types.PathBinding{agencyBinding},
 			ConstantBindings: typeConstant,
+			IsWrite:          true,
 		})
 
 		// Per-entity and relationship routes require EntityIDParam.
@@ -128,6 +129,7 @@ func RoutesFromSchema(schema types.Schema, basePath, agencyIDParam, grpcService 
 				GrpcMethod:       grpcService + "/UpdateEntity",
 				PathBindings:     []types.PathBinding{agencyBinding, entityBinding},
 				ConstantBindings: typeConstant,
+				IsWrite:          true,
 			})
 		}
 
@@ -139,6 +141,7 @@ func RoutesFromSchema(schema types.Schema, basePath, agencyIDParam, grpcService 
 			GrpcMethod:       grpcService + "/DeleteEntity",
 			PathBindings:     []types.PathBinding{agencyBinding, entityBinding},
 			ConstantBindings: typeConstant,
+			IsWrite:          true,
 		})
 
 		// Relationship routes for each declared edge with a PathSegment.
@@ -169,6 +172,7 @@ func RoutesFromSchema(schema types.Schema, basePath, agencyIDParam, grpcService 
 				GrpcMethod:       grpcService + "/CreateRelationship",
 				PathBindings:     []types.PathBinding{agencyBinding, entityBinding},
 				ConstantBindings: relNameConstant,
+				IsWrite:          true,
 			})
 
 			// DELETE an edge by relationship ID — no constant bindings needed.
@@ -178,6 +182,7 @@ func RoutesFromSchema(schema types.Schema, basePath, agencyIDParam, grpcService 
 				Capability:   "delete_" + relCap,
 				GrpcMethod:   grpcService + "/DeleteRelationship",
 				PathBindings: []types.PathBinding{agencyBinding, entityBinding, relBinding},
+				IsWrite:      true,
 			})
 		}
 	}

@@ -71,6 +71,7 @@ git branch -d feature/SHAREDLIB-XXX_description
 | ~~SHAREDLIB-004~~ ✅ | Generic `registrar` package | ✅ Done | ~~SHAREDLIB-001~~ ✅, ~~SHAREDLIB-003~~ ✅ | Move from `CodeValdGit/internal/registrar/` + `CodeValdWork/internal/registrar/`; caller injects `serviceName`, topics, routes |
 | ~~SHAREDLIB-005~~ ✅ | `serverutil` package | ✅ Done | ~~SHAREDLIB-001~~ ✅ | `NewGRPCServer()`, `RunWithGracefulShutdown()`, `EnvOrDefault()`, `ParseDurationSeconds()`, `ParseDurationString()` |
 | ~~SHAREDLIB-006~~ ✅ | `arangoutil` package | ✅ Done | ~~SHAREDLIB-001~~ ✅ | `Connect(ctx, Config) (driver.Database, error)` — bootstrap only; each service keeps its own collection logic |
+| SHAREDLIB-012 | Route write classification (`IsWrite` on `RouteInfo` + `RouteDeclaration`) | 📋 Not Started | ~~SHAREDLIB-002~~ ✅, ~~SHAREDLIB-003~~ ✅ | Service-declared write/read flag per route so Cross's interim Basic-auth gate stops misclassifying POST-search endpoints. Design: [reference/route-write-classification.md](../2-SoftwareDesignAndArchitecture/reference/route-write-classification.md). Spans SharedLib (types + proto + registrar + schemaroutes), Cross (registry + proxy + authMiddleware), Git (annotate every registrar entry). |
 
 ---
 

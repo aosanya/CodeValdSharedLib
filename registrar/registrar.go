@@ -119,6 +119,7 @@ func routesToProto(routes []types.RouteInfo) []*crossv1.RouteDeclaration {
 			GrpcMethod:       r.GrpcMethod,
 			PathBindings:     bindings,
 			ConstantBindings: constants,
+			IsWrite:          r.IsWrite,
 		}
 	}
 	return decls

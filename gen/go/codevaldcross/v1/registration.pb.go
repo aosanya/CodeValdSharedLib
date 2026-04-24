@@ -160,8 +160,15 @@ type RouteDeclaration struct {
 	// routes backed by generic RPCs (e.g. ListEntities, CreateEntity) carry
 	// type metadata without exposing it to HTTP callers.
 	ConstantBindings []*ConstantBinding `protobuf:"bytes,6,rep,name=constant_bindings,json=constantBindings,proto3" json:"constant_bindings,omitempty"`
-	unknownFields    protoimpl.UnknownFields
-	sizeCache        protoimpl.SizeCache
+	// is_write reports whether invoking this route mutates state. Services
+	// declare it so that CodeValdCross's interim HTTP Basic-auth gate can
+	// distinguish writes from POST-based reads (e.g. "search" / "query"
+	// endpoints whose payloads do not fit in a URL). Zero value (false) is
+	// the safe default for reads; services must explicitly opt routes in
+	// as writes.
+	IsWrite       bool `protobuf:"varint,7,opt,name=is_write,json=isWrite,proto3" json:"is_write,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *RouteDeclaration) Reset() {
@@ -234,6 +241,13 @@ func (x *RouteDeclaration) GetConstantBindings() []*ConstantBinding {
 		return x.ConstantBindings
 	}
 	return nil
+}
+
+func (x *RouteDeclaration) GetIsWrite() bool {
+	if x != nil {
+		return x.IsWrite
+	}
+	return false
 }
 
 // RegisterRequest carries the service identity and its pub/sub topic contracts.
@@ -381,7 +395,7 @@ const file_codevaldcross_v1_registration_proto_rawDesc = "" +
 	"\x05field\x18\x02 \x01(\tR\x05field\"=\n" +
 	"\x0fConstantBinding\x12\x14\n" +
 	"\x05field\x18\x01 \x01(\tR\x05field\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value\"\x99\x02\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value\"\xb4\x02\n" +
 	"\x10RouteDeclaration\x12\x16\n" +
 	"\x06method\x18\x01 \x01(\tR\x06method\x12\x18\n" +
 	"\apattern\x18\x02 \x01(\tR\apattern\x12\x1e\n" +
@@ -391,7 +405,8 @@ const file_codevaldcross_v1_registration_proto_rawDesc = "" +
 	"\vgrpc_method\x18\x04 \x01(\tR\n" +
 	"grpcMethod\x12B\n" +
 	"\rpath_bindings\x18\x05 \x03(\v2\x1d.codevaldcross.v1.PathBindingR\fpathBindings\x12N\n" +
-	"\x11constant_bindings\x18\x06 \x03(\v2!.codevaldcross.v1.ConstantBindingR\x10constantBindings\"\xd9\x01\n" +
+	"\x11constant_bindings\x18\x06 \x03(\v2!.codevaldcross.v1.ConstantBindingR\x10constantBindings\x12\x19\n" +
+	"\bis_write\x18\a \x01(\bR\aisWrite\"\xd9\x01\n" +
 	"\x0fRegisterRequest\x12!\n" +
 	"\fservice_name\x18\x01 \x01(\tR\vserviceName\x12\x1a\n" +
 	"\bproduces\x18\x02 \x03(\tR\bproduces\x12\x1a\n" +
