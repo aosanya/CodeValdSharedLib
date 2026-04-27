@@ -5,9 +5,12 @@ import "time"
 // PropertyType is the data type of a single property in a [TypeDefinition].
 //
 // Primitive types map directly to Go/JSON primitives.
-// Choice types (option, select, multiselect) declare the field shape; the
-// allowed option values are stored as runtime data in the service's own
-// collection, not baked into the schema definition.
+// Choice types declare the field shape:
+//   - [PropertyTypeOption] carries its closed value set inline on
+//     [PropertyDefinition.Options].
+//   - [PropertyTypeSelect] and [PropertyTypeMultiSelect] declare only the field
+//     shape; the runtime value list is stored in the service's own collection.
+//
 // Complex types carry additional configuration on [PropertyDefinition].
 type PropertyType string
 
@@ -23,6 +26,11 @@ const (
 	// PropertyTypeFloat is a 64-bit floating-point number.
 	PropertyTypeFloat PropertyType = "float"
 
+	// PropertyTypeNumber is a generic JSON number — accepts either integer or
+	// floating-point values. Use this when the schema does not need to commit
+	// to int vs float at definition time (e.g. "hours", "rating", "score").
+	PropertyTypeNumber PropertyType = "number"
+
 	// PropertyTypeDate is an ISO 8601 date (e.g. "2026-01-15").
 	PropertyTypeDate PropertyType = "date"
 
@@ -36,15 +44,19 @@ const (
 	// System-assigned at entity creation time; never set by user input.
 	PropertyTypeUUID PropertyType = "uuid"
 
-	// Choice types — allowed values are stored as runtime data, not in the schema.
+	// Choice types.
 
-	// PropertyTypeOption is a single fixed value from a predefined set.
+	// PropertyTypeOption is a single fixed value from a closed, schema-defined
+	// set. The allowed values are declared inline via
+	// [PropertyDefinition.Options]; DataManager implementations validate writes
+	// against that list.
 	PropertyTypeOption PropertyType = "option"
 
-	// PropertyTypeSelect is a single value chosen from a list at runtime.
+	// PropertyTypeSelect is a single value chosen from a list whose entries are
+	// curated by the agency at runtime (not baked into the schema).
 	PropertyTypeSelect PropertyType = "select"
 
-	// PropertyTypeMultiSelect is one or more values chosen from a list at runtime.
+	// PropertyTypeMultiSelect is one or more values chosen from a runtime-curated list.
 	PropertyTypeMultiSelect PropertyType = "multiselect"
 
 	// Complex types — require additional configuration on [PropertyDefinition].
@@ -52,6 +64,11 @@ const (
 	// PropertyTypeRating is a numeric rating with a configurable range and labels.
 	// A non-nil [RatingConfig] must be supplied on the [PropertyDefinition].
 	PropertyTypeRating PropertyType = "rating"
+
+	// PropertyTypeArray is an ordered, homogeneous list of values. The element
+	// type is declared via [PropertyDefinition.ElementType]; when ElementType is
+	// the zero value, the array is treated as untyped (any JSON value).
+	PropertyTypeArray PropertyType = "array"
 )
 
 // RatingConfig holds the configuration for a property of type [PropertyTypeRating].
@@ -82,6 +99,20 @@ type PropertyDefinition struct {
 	// RatingConfig holds the configuration for rating properties.
 	// Must be non-nil when Type is [PropertyTypeRating]; ignored for all other types.
 	RatingConfig *RatingConfig
+
+	// Options is the closed set of allowed string values for properties of type
+	// [PropertyTypeOption]. DataManager implementations validate writes against
+	// this list and reject values outside it. Ignored for all other types.
+	// An empty slice on an option-typed property means "no values allowed";
+	// callers must declare the full set at schema-definition time.
+	Options []string
+
+	// ElementType declares the data type of each element in an array property.
+	// Must be set when Type is [PropertyTypeArray]; the zero value is treated
+	// as "untyped" (any JSON value permitted). Ignored for all other types.
+	// Nested arrays are not supported — ElementType itself may not be
+	// [PropertyTypeArray].
+	ElementType PropertyType
 }
 
 // RelationshipDefinition declares a legal directed edge from the owning

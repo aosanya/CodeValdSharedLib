@@ -165,3 +165,55 @@ func TestServiceRegistration_EmptyRoutes(t *testing.T) {
 		t.Error("Routes should be non-nil after round-trip of empty slice")
 	}
 }
+
+func TestPropertyType_NewConstants(t *testing.T) {
+	cases := []struct {
+		got  types.PropertyType
+		want string
+	}{
+		{types.PropertyTypeNumber, "number"},
+		{types.PropertyTypeArray, "array"},
+	}
+	for _, c := range cases {
+		if string(c.got) != c.want {
+			t.Errorf("PropertyType: got %q, want %q", c.got, c.want)
+		}
+	}
+}
+
+func TestPropertyDefinition_OptionsCarriesAllowedValues(t *testing.T) {
+	p := types.PropertyDefinition{
+		Name:    "status",
+		Type:    types.PropertyTypeOption,
+		Options: []string{"pending", "in_progress", "completed"},
+	}
+	if len(p.Options) != 3 {
+		t.Fatalf("Options len: got %d, want 3", len(p.Options))
+	}
+	if p.Options[1] != "in_progress" {
+		t.Errorf("Options[1]: got %q, want %q", p.Options[1], "in_progress")
+	}
+}
+
+func TestPropertyDefinition_ArrayElementType(t *testing.T) {
+	p := types.PropertyDefinition{
+		Name:        "tags",
+		Type:        types.PropertyTypeArray,
+		ElementType: types.PropertyTypeString,
+	}
+	if p.ElementType != types.PropertyTypeString {
+		t.Errorf("ElementType: got %q, want %q", p.ElementType, types.PropertyTypeString)
+	}
+}
+
+func TestPropertyDefinition_ZeroValueOptionsAndElementType(t *testing.T) {
+	// Existing call sites that omit Options / ElementType continue to compile
+	// and produce zero values — guards against accidental field-required changes.
+	p := types.PropertyDefinition{Name: "title", Type: types.PropertyTypeString}
+	if p.Options != nil {
+		t.Errorf("Options: got %v, want nil zero value", p.Options)
+	}
+	if p.ElementType != "" {
+		t.Errorf("ElementType: got %q, want empty zero value", p.ElementType)
+	}
+}
