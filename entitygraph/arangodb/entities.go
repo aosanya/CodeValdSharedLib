@@ -4,7 +4,6 @@ package arangodb
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -13,13 +12,6 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/aosanya/CodeValdSharedLib/entitygraph"
-)
-
-// sentinel errors for storage-layer entity operations.
-var (
-	errEntityNotFound      = errors.New("entity not found")
-	errEntityAlreadyExists = errors.New("entity already exists")
-	errImmutableType       = errors.New("entity type is immutable")
 )
 
 // entityDoc is the ArangoDB document representation of an [entitygraph.Entity].
@@ -35,7 +27,7 @@ type entityDoc struct {
 }
 
 // CreateEntity creates a new entity document in the appropriate collection.
-// Returns errEntityAlreadyExists if a document with the same key already exists.
+// Returns entitygraph.ErrEntityAlreadyExists if a document with the same key already exists.
 func (b *Backend) CreateEntity(ctx context.Context, req entitygraph.CreateEntityRequest) (entitygraph.Entity, error) {
 	now := time.Now().UTC()
 	id := uuid.NewString()
@@ -53,7 +45,7 @@ func (b *Backend) CreateEntity(ctx context.Context, req entitygraph.CreateEntity
 	col := b.collectionFor(req.TypeID)
 	if _, err := col.CreateDocument(ctx, doc); err != nil {
 		if driver.IsConflict(err) {
-			return entitygraph.Entity{}, fmt.Errorf("CreateEntity: %w", errEntityAlreadyExists)
+			return entitygraph.Entity{}, fmt.Errorf("CreateEntity: %w", entitygraph.ErrEntityAlreadyExists)
 		}
 		return entitygraph.Entity{}, fmt.Errorf("CreateEntity: %w", err)
 	}
@@ -62,12 +54,15 @@ func (b *Backend) CreateEntity(ctx context.Context, req entitygraph.CreateEntity
 
 // GetEntity returns the entity identified by agencyID and entityID.
 // Searches every entity collection derived from the schema. Returns
-// errEntityNotFound if the entity is absent from all collections.
+// [entitygraph.ErrEntityNotFound] if the entity is absent from all
+// collections, belongs to a different agency, or has been soft-deleted.
+// Soft-deleted documents (Deleted=true) are treated as not found so that
+// DeleteEntity is observable to subsequent GetEntity / TraverseGraph calls.
 func (b *Backend) GetEntity(ctx context.Context, agencyID, entityID string) (entitygraph.Entity, error) {
 	for _, col := range b.allEntityCollections() {
 		var doc entityDoc
 		if _, err := col.ReadDocument(ctx, entityID, &doc); err == nil {
-			if doc.AgencyID != agencyID {
+			if doc.AgencyID != agencyID || doc.Deleted {
 				continue
 			}
 			return toEntity(doc, entityID), nil
@@ -75,12 +70,12 @@ func (b *Backend) GetEntity(ctx context.Context, agencyID, entityID string) (ent
 			return entitygraph.Entity{}, fmt.Errorf("GetEntity: %w", err)
 		}
 	}
-	return entitygraph.Entity{}, fmt.Errorf("GetEntity %s: %w", entityID, errEntityNotFound)
+	return entitygraph.Entity{}, fmt.Errorf("GetEntity %s: %w", entityID, entitygraph.ErrEntityNotFound)
 }
 
 // UpdateEntity patches the mutable properties of an entity.
-// Returns errImmutableType if the entity's TypeID has Immutable set.
-// Returns errEntityNotFound if the entity does not exist.
+// Returns entitygraph.ErrImmutableType if the entity's TypeID has Immutable set.
+// Returns entitygraph.ErrEntityNotFound if the entity does not exist.
 func (b *Backend) UpdateEntity(
 	ctx context.Context,
 	agencyID, entityID string,
@@ -91,7 +86,7 @@ func (b *Backend) UpdateEntity(
 		return entitygraph.Entity{}, fmt.Errorf("UpdateEntity %s: %w", entityID, err)
 	}
 	if b.isImmutable(existing.TypeID) {
-		return entitygraph.Entity{}, fmt.Errorf("UpdateEntity %s: %w", entityID, errImmutableType)
+		return entitygraph.Entity{}, fmt.Errorf("UpdateEntity %s: %w", entityID, entitygraph.ErrImmutableType)
 	}
 	if existing.Properties == nil {
 		existing.Properties = make(map[string]any)
@@ -113,7 +108,7 @@ func (b *Backend) UpdateEntity(
 	col := b.collectionFor(existing.TypeID)
 	if _, err := col.ReplaceDocument(ctx, entityID, updated); err != nil {
 		if driver.IsNotFound(err) {
-			return entitygraph.Entity{}, fmt.Errorf("UpdateEntity %s: %w", entityID, errEntityNotFound)
+			return entitygraph.Entity{}, fmt.Errorf("UpdateEntity %s: %w", entityID, entitygraph.ErrEntityNotFound)
 		}
 		return entitygraph.Entity{}, fmt.Errorf("UpdateEntity %s: %w", entityID, err)
 	}
@@ -141,7 +136,7 @@ func (b *Backend) DeleteEntity(ctx context.Context, agencyID, entityID string) e
 	col := b.collectionFor(existing.TypeID)
 	if _, err := col.ReplaceDocument(ctx, entityID, updated); err != nil {
 		if driver.IsNotFound(err) {
-			return fmt.Errorf("DeleteEntity %s: %w", entityID, errEntityNotFound)
+			return fmt.Errorf("DeleteEntity %s: %w", entityID, entitygraph.ErrEntityNotFound)
 		}
 		return fmt.Errorf("DeleteEntity %s: %w", entityID, err)
 	}
@@ -277,7 +272,7 @@ func (b *Backend) UpsertEntity(ctx context.Context, req entitygraph.CreateEntity
 		}
 		if _, err := col.CreateDocument(ctx, doc); err != nil {
 			if driver.IsConflict(err) {
-				return entitygraph.Entity{}, fmt.Errorf("UpsertEntity: %w", errEntityAlreadyExists)
+				return entitygraph.Entity{}, fmt.Errorf("UpsertEntity: %w", entitygraph.ErrEntityAlreadyExists)
 			}
 			return entitygraph.Entity{}, fmt.Errorf("UpsertEntity: %w", err)
 		}
@@ -304,7 +299,7 @@ func (b *Backend) UpsertEntity(ctx context.Context, req entitygraph.CreateEntity
 	}
 	if _, err := col.ReplaceDocument(ctx, existingDoc.Key, updated); err != nil {
 		if driver.IsNotFound(err) {
-			return entitygraph.Entity{}, fmt.Errorf("UpsertEntity: %w", errEntityNotFound)
+			return entitygraph.Entity{}, fmt.Errorf("UpsertEntity: %w", entitygraph.ErrEntityNotFound)
 		}
 		return entitygraph.Entity{}, fmt.Errorf("UpsertEntity: %w", err)
 	}
