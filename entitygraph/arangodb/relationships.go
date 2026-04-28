@@ -4,19 +4,14 @@ package arangodb
 
 import (
 	"context"
-	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	driver "github.com/arangodb/go-driver"
 	"github.com/google/uuid"
 
 	"github.com/aosanya/CodeValdSharedLib/entitygraph"
-)
-
-// sentinel errors for storage-layer relationship operations.
-var (
-	errRelationshipNotFound = errors.New("relationship not found")
 )
 
 // relationshipDoc is the ArangoDB edge-document representation of an
@@ -46,11 +41,11 @@ func (b *Backend) entityHandle(ctx context.Context, agencyID, entityID string) (
 			return "", err
 		}
 	}
-	return "", fmt.Errorf("entityHandle %s: %w", entityID, errEntityNotFound)
+	return "", fmt.Errorf("entityHandle %s: %w", entityID, entitygraph.ErrEntityNotFound)
 }
 
 // CreateRelationship creates a directed edge in the relationships collection.
-// Returns errEntityNotFound if the FromID or ToID entity does not exist.
+// Returns entitygraph.ErrEntityNotFound if the FromID or ToID entity does not exist.
 func (b *Backend) CreateRelationship(
 	ctx context.Context,
 	req entitygraph.CreateRelationshipRequest,
@@ -87,7 +82,7 @@ func (b *Backend) CreateRelationship(
 }
 
 // GetRelationship returns the relationship identified by agencyID and
-// relationshipID. Returns errRelationshipNotFound if absent.
+// relationshipID. Returns entitygraph.ErrRelationshipNotFound if absent.
 func (b *Backend) GetRelationship(
 	ctx context.Context,
 	agencyID, relationshipID string,
@@ -95,18 +90,18 @@ func (b *Backend) GetRelationship(
 	var doc relationshipDoc
 	if _, err := b.relationships.ReadDocument(ctx, relationshipID, &doc); err != nil {
 		if driver.IsNotFound(err) {
-			return entitygraph.Relationship{}, fmt.Errorf("GetRelationship %s: %w", relationshipID, errRelationshipNotFound)
+			return entitygraph.Relationship{}, fmt.Errorf("GetRelationship %s: %w", relationshipID, entitygraph.ErrRelationshipNotFound)
 		}
 		return entitygraph.Relationship{}, fmt.Errorf("GetRelationship %s: %w", relationshipID, err)
 	}
 	if doc.AgencyID != agencyID {
-		return entitygraph.Relationship{}, fmt.Errorf("GetRelationship %s: %w", relationshipID, errRelationshipNotFound)
+		return entitygraph.Relationship{}, fmt.Errorf("GetRelationship %s: %w", relationshipID, entitygraph.ErrRelationshipNotFound)
 	}
 	return toRelationship(doc, relationshipID), nil
 }
 
 // DeleteRelationship removes an edge document permanently.
-// Returns errRelationshipNotFound if the relationship does not exist.
+// Returns entitygraph.ErrRelationshipNotFound if the relationship does not exist.
 func (b *Backend) DeleteRelationship(
 	ctx context.Context,
 	agencyID, relationshipID string,
@@ -116,7 +111,7 @@ func (b *Backend) DeleteRelationship(
 	}
 	if _, err := b.relationships.RemoveDocument(ctx, relationshipID); err != nil {
 		if driver.IsNotFound(err) {
-			return fmt.Errorf("DeleteRelationship %s: %w", relationshipID, errRelationshipNotFound)
+			return fmt.Errorf("DeleteRelationship %s: %w", relationshipID, entitygraph.ErrRelationshipNotFound)
 		}
 		return fmt.Errorf("DeleteRelationship %s: %w", relationshipID, err)
 	}
@@ -179,8 +174,17 @@ func (b *Backend) ListRelationships(
 }
 
 // TraverseGraph walks the named graph from the start entity up to the
-// requested depth and returns reachable non-deleted vertices. Direction is
-// "OUTBOUND", "INBOUND", or "ANY".
+// requested depth and returns both the traversed edges and the reachable
+// non-deleted vertices.
+//
+// Filters honoured:
+//   - req.AgencyID — edges from other agencies are excluded (hard isolation).
+//   - req.Names    — when non-empty, only edges whose Name is in the list
+//     are returned. An empty/nil Names follows every reachable edge.
+//
+// Direction accepts the entitygraph.TraverseGraphRequest contract values
+// "outbound" / "inbound" / "any" (case-insensitive). An empty Direction
+// defaults to OUTBOUND. Vertices are deduplicated by entity ID.
 func (b *Backend) TraverseGraph(
 	ctx context.Context,
 	req entitygraph.TraverseGraphRequest,
@@ -189,9 +193,9 @@ func (b *Backend) TraverseGraph(
 	if err != nil {
 		return entitygraph.TraverseGraphResult{}, fmt.Errorf("TraverseGraph start: %w", err)
 	}
-	direction := req.Direction
-	if direction == "" {
-		direction = "OUTBOUND"
+	direction, err := normalizeDirection(req.Direction)
+	if err != nil {
+		return entitygraph.TraverseGraphResult{}, err
 	}
 	depth := req.Depth
 	if depth <= 0 {
@@ -200,33 +204,70 @@ func (b *Backend) TraverseGraph(
 	bindVars := map[string]interface{}{
 		"startVertex": startHandle,
 		"depth":       depth,
+		"agencyID":    req.AgencyID,
 	}
+	nameFilter := ""
+	if len(req.Names) > 0 {
+		nameFilter = "FILTER e.name IN @names"
+		bindVars["names"] = req.Names
+	}
+	// Direction is an AQL keyword and cannot be parameterised — it is
+	// validated by normalizeDirection above before being inlined.
 	q := fmt.Sprintf(
-		`FOR v, e, p IN 1..@depth %s @startVertex GRAPH '%s'
+		`FOR v, e IN 1..@depth %s @startVertex GRAPH '%s'
+		 FILTER e.agency_id == @agencyID
+		 %s
 		 FILTER v.deleted != true
-		 RETURN DISTINCT v`,
-		direction, b.graphName,
+		 RETURN { v: v, e: e }`,
+		direction, b.graphName, nameFilter,
 	)
 	cursor, err := b.db.Query(ctx, q, bindVars)
 	if err != nil {
 		return entitygraph.TraverseGraphResult{}, fmt.Errorf("TraverseGraph: query: %w", err)
 	}
-	var vertices []entitygraph.Entity
-	var readErr error
+	defer cursor.Close()
+
+	var (
+		vertices []entitygraph.Entity
+		edges    []entitygraph.Relationship
+		seenVtx  = map[string]struct{}{}
+	)
 	for cursor.HasMore() {
-		var doc entityDoc
-		meta, rErr := cursor.ReadDocument(ctx, &doc)
-		if rErr != nil {
-			readErr = fmt.Errorf("TraverseGraph: read: %w", rErr)
-			break
+		var row struct {
+			V entityDoc       `json:"v"`
+			E relationshipDoc `json:"e"`
 		}
-		vertices = append(vertices, toEntity(doc, meta.Key))
+		// We need both meta keys; ReadDocument only returns the row's outer
+		// metadata, so the inner _key fields decode via JSON tags.
+		if _, rErr := cursor.ReadDocument(ctx, &row); rErr != nil {
+			return entitygraph.TraverseGraphResult{}, fmt.Errorf("TraverseGraph: read: %w", rErr)
+		}
+		if _, ok := seenVtx[row.V.Key]; !ok {
+			seenVtx[row.V.Key] = struct{}{}
+			vertices = append(vertices, toEntity(row.V, row.V.Key))
+		}
+		edges = append(edges, toRelationship(row.E, row.E.Key))
 	}
-	cursor.Close()
-	if readErr != nil {
-		return entitygraph.TraverseGraphResult{}, readErr
+	return entitygraph.TraverseGraphResult{Vertices: vertices, Edges: edges}, nil
+}
+
+// normalizeDirection accepts the entitygraph contract values
+// ("outbound"/"inbound"/"any") case-insensitively and returns the AQL keyword
+// to inline in the traversal query. An empty input defaults to OUTBOUND.
+// Any other value is rejected before substitution to keep the AQL safe.
+func normalizeDirection(d string) (string, error) {
+	switch strings.ToUpper(d) {
+	case "":
+		return "OUTBOUND", nil
+	case "OUTBOUND":
+		return "OUTBOUND", nil
+	case "INBOUND":
+		return "INBOUND", nil
+	case "ANY":
+		return "ANY", nil
+	default:
+		return "", fmt.Errorf("TraverseGraph: invalid direction %q (want outbound|inbound|any)", d)
 	}
-	return entitygraph.TraverseGraphResult{Vertices: vertices}, nil
 }
 
 // toRelationship converts a relationshipDoc and its ArangoDB _key to a
