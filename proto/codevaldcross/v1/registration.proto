@@ -12,7 +12,30 @@ service OrchestratorService {
   // topic capabilities. It is safe to call repeatedly — each call acts as a
   // liveness heartbeat. A successful response confirms the registration.
   rpc Register(RegisterRequest) returns (RegisterResponse);
+
+  // Publish routes an event from any downstream service to CodeValdPubSub.
+  // Cross looks up the live PubSubService for the given agency and forwards the
+  // event via PubSubService.Publish. Best-effort: errors are logged but do not
+  // propagate back to the caller — the originating operation is already done.
+  rpc Publish(PublishEventRequest) returns (PublishEventResponse);
 }
+
+// PublishEventRequest carries a single event from a downstream service to Cross,
+// which forwards it to CodeValdPubSub on behalf of the originating service.
+message PublishEventRequest {
+  // agency_id scopes the event; used to locate the correct PubSub instance.
+  string agency_id = 1;
+  // topic is the dotted event name (e.g. "work.task.updated").
+  string topic     = 2;
+  // source is the originating service name (e.g. "codevaldwork").
+  string source    = 3;
+  // payload is the JSON-encoded event-specific data.
+  string payload   = 4;
+}
+
+// PublishEventResponse is intentionally empty.
+// A successful response means Cross accepted the event for forwarding.
+message PublishEventResponse {}
 
 // PathBinding maps one URL path-parameter placeholder (as it appears in the
 // pattern, e.g. "agencyId") to the corresponding top-level field name in the

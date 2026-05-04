@@ -28,6 +28,11 @@ type Registrar interface {
 	// Close releases the underlying gRPC connection. Call after the context
 	// passed to Run has been cancelled.
 	Close()
+
+	// Publish forwards a service lifecycle event to CodeValdCross, which routes
+	// it to CodeValdPubSub. Best-effort: errors are logged but do not propagate
+	// — the originating operation is already persisted.
+	Publish(ctx context.Context, agencyID, topic, source, payload string) error
 }
 
 // registrar is the unexported concrete implementation of Registrar.
@@ -159,6 +164,21 @@ func (r *registrar) Close() {
 			log.Printf("registrar[%s]: close connection: %v", r.serviceName, err)
 		}
 	}
+}
+
+// Publish implements [Registrar]. It calls OrchestratorService.Publish on
+// CodeValdCross, which forwards the event to CodeValdPubSub. Errors are
+// returned to the caller; the caller decides whether to log or ignore them.
+func (r *registrar) Publish(ctx context.Context, agencyID, topic, source, payload string) error {
+	callCtx, cancel := context.WithTimeout(ctx, r.pingTimeout)
+	defer cancel()
+	_, err := r.client.Publish(callCtx, &crossv1.PublishEventRequest{
+		AgencyId: agencyID,
+		Topic:    topic,
+		Source:   source,
+		Payload:  payload,
+	})
+	return err
 }
 
 // ping sends a single Register RPC to CodeValdCross. Errors are logged; the

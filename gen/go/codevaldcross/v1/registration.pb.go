@@ -21,6 +21,118 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+// PublishEventRequest carries a single event from a downstream service to Cross,
+// which forwards it to CodeValdPubSub on behalf of the originating service.
+type PublishEventRequest struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// agency_id scopes the event; used to locate the correct PubSub instance.
+	AgencyId string `protobuf:"bytes,1,opt,name=agency_id,json=agencyId,proto3" json:"agency_id,omitempty"`
+	// topic is the dotted event name (e.g. "work.task.updated").
+	Topic string `protobuf:"bytes,2,opt,name=topic,proto3" json:"topic,omitempty"`
+	// source is the originating service name (e.g. "codevaldwork").
+	Source string `protobuf:"bytes,3,opt,name=source,proto3" json:"source,omitempty"`
+	// payload is the JSON-encoded event-specific data.
+	Payload       string `protobuf:"bytes,4,opt,name=payload,proto3" json:"payload,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PublishEventRequest) Reset() {
+	*x = PublishEventRequest{}
+	mi := &file_codevaldcross_v1_registration_proto_msgTypes[0]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PublishEventRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PublishEventRequest) ProtoMessage() {}
+
+func (x *PublishEventRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_codevaldcross_v1_registration_proto_msgTypes[0]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PublishEventRequest.ProtoReflect.Descriptor instead.
+func (*PublishEventRequest) Descriptor() ([]byte, []int) {
+	return file_codevaldcross_v1_registration_proto_rawDescGZIP(), []int{0}
+}
+
+func (x *PublishEventRequest) GetAgencyId() string {
+	if x != nil {
+		return x.AgencyId
+	}
+	return ""
+}
+
+func (x *PublishEventRequest) GetTopic() string {
+	if x != nil {
+		return x.Topic
+	}
+	return ""
+}
+
+func (x *PublishEventRequest) GetSource() string {
+	if x != nil {
+		return x.Source
+	}
+	return ""
+}
+
+func (x *PublishEventRequest) GetPayload() string {
+	if x != nil {
+		return x.Payload
+	}
+	return ""
+}
+
+// PublishEventResponse is intentionally empty.
+// A successful response means Cross accepted the event for forwarding.
+type PublishEventResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PublishEventResponse) Reset() {
+	*x = PublishEventResponse{}
+	mi := &file_codevaldcross_v1_registration_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PublishEventResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PublishEventResponse) ProtoMessage() {}
+
+func (x *PublishEventResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_codevaldcross_v1_registration_proto_msgTypes[1]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PublishEventResponse.ProtoReflect.Descriptor instead.
+func (*PublishEventResponse) Descriptor() ([]byte, []int) {
+	return file_codevaldcross_v1_registration_proto_rawDescGZIP(), []int{1}
+}
+
 // PathBinding maps one URL path-parameter placeholder (as it appears in the
 // pattern, e.g. "agencyId") to the corresponding top-level field name in the
 // gRPC request message (e.g. "agency_id"). Cross injects the runtime value
@@ -35,7 +147,7 @@ type PathBinding struct {
 
 func (x *PathBinding) Reset() {
 	*x = PathBinding{}
-	mi := &file_codevaldcross_v1_registration_proto_msgTypes[0]
+	mi := &file_codevaldcross_v1_registration_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -47,7 +159,7 @@ func (x *PathBinding) String() string {
 func (*PathBinding) ProtoMessage() {}
 
 func (x *PathBinding) ProtoReflect() protoreflect.Message {
-	mi := &file_codevaldcross_v1_registration_proto_msgTypes[0]
+	mi := &file_codevaldcross_v1_registration_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -60,7 +172,7 @@ func (x *PathBinding) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PathBinding.ProtoReflect.Descriptor instead.
 func (*PathBinding) Descriptor() ([]byte, []int) {
-	return file_codevaldcross_v1_registration_proto_rawDescGZIP(), []int{0}
+	return file_codevaldcross_v1_registration_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *PathBinding) GetUrlParam() string {
@@ -93,7 +205,7 @@ type ConstantBinding struct {
 
 func (x *ConstantBinding) Reset() {
 	*x = ConstantBinding{}
-	mi := &file_codevaldcross_v1_registration_proto_msgTypes[1]
+	mi := &file_codevaldcross_v1_registration_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -105,7 +217,7 @@ func (x *ConstantBinding) String() string {
 func (*ConstantBinding) ProtoMessage() {}
 
 func (x *ConstantBinding) ProtoReflect() protoreflect.Message {
-	mi := &file_codevaldcross_v1_registration_proto_msgTypes[1]
+	mi := &file_codevaldcross_v1_registration_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -118,7 +230,7 @@ func (x *ConstantBinding) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ConstantBinding.ProtoReflect.Descriptor instead.
 func (*ConstantBinding) Descriptor() ([]byte, []int) {
-	return file_codevaldcross_v1_registration_proto_rawDescGZIP(), []int{1}
+	return file_codevaldcross_v1_registration_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *ConstantBinding) GetField() string {
@@ -173,7 +285,7 @@ type RouteDeclaration struct {
 
 func (x *RouteDeclaration) Reset() {
 	*x = RouteDeclaration{}
-	mi := &file_codevaldcross_v1_registration_proto_msgTypes[2]
+	mi := &file_codevaldcross_v1_registration_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -185,7 +297,7 @@ func (x *RouteDeclaration) String() string {
 func (*RouteDeclaration) ProtoMessage() {}
 
 func (x *RouteDeclaration) ProtoReflect() protoreflect.Message {
-	mi := &file_codevaldcross_v1_registration_proto_msgTypes[2]
+	mi := &file_codevaldcross_v1_registration_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -198,7 +310,7 @@ func (x *RouteDeclaration) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RouteDeclaration.ProtoReflect.Descriptor instead.
 func (*RouteDeclaration) Descriptor() ([]byte, []int) {
-	return file_codevaldcross_v1_registration_proto_rawDescGZIP(), []int{2}
+	return file_codevaldcross_v1_registration_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *RouteDeclaration) GetMethod() string {
@@ -277,7 +389,7 @@ type RegisterRequest struct {
 
 func (x *RegisterRequest) Reset() {
 	*x = RegisterRequest{}
-	mi := &file_codevaldcross_v1_registration_proto_msgTypes[3]
+	mi := &file_codevaldcross_v1_registration_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -289,7 +401,7 @@ func (x *RegisterRequest) String() string {
 func (*RegisterRequest) ProtoMessage() {}
 
 func (x *RegisterRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_codevaldcross_v1_registration_proto_msgTypes[3]
+	mi := &file_codevaldcross_v1_registration_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -302,7 +414,7 @@ func (x *RegisterRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RegisterRequest.ProtoReflect.Descriptor instead.
 func (*RegisterRequest) Descriptor() ([]byte, []int) {
-	return file_codevaldcross_v1_registration_proto_rawDescGZIP(), []int{3}
+	return file_codevaldcross_v1_registration_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *RegisterRequest) GetServiceName() string {
@@ -357,7 +469,7 @@ type RegisterResponse struct {
 
 func (x *RegisterResponse) Reset() {
 	*x = RegisterResponse{}
-	mi := &file_codevaldcross_v1_registration_proto_msgTypes[4]
+	mi := &file_codevaldcross_v1_registration_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -369,7 +481,7 @@ func (x *RegisterResponse) String() string {
 func (*RegisterResponse) ProtoMessage() {}
 
 func (x *RegisterResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_codevaldcross_v1_registration_proto_msgTypes[4]
+	mi := &file_codevaldcross_v1_registration_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -382,14 +494,20 @@ func (x *RegisterResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RegisterResponse.ProtoReflect.Descriptor instead.
 func (*RegisterResponse) Descriptor() ([]byte, []int) {
-	return file_codevaldcross_v1_registration_proto_rawDescGZIP(), []int{4}
+	return file_codevaldcross_v1_registration_proto_rawDescGZIP(), []int{6}
 }
 
 var File_codevaldcross_v1_registration_proto protoreflect.FileDescriptor
 
 const file_codevaldcross_v1_registration_proto_rawDesc = "" +
 	"\n" +
-	"#codevaldcross/v1/registration.proto\x12\x10codevaldcross.v1\"@\n" +
+	"#codevaldcross/v1/registration.proto\x12\x10codevaldcross.v1\"z\n" +
+	"\x13PublishEventRequest\x12\x1b\n" +
+	"\tagency_id\x18\x01 \x01(\tR\bagencyId\x12\x14\n" +
+	"\x05topic\x18\x02 \x01(\tR\x05topic\x12\x16\n" +
+	"\x06source\x18\x03 \x01(\tR\x06source\x12\x18\n" +
+	"\apayload\x18\x04 \x01(\tR\apayload\"\x16\n" +
+	"\x14PublishEventResponse\"@\n" +
 	"\vPathBinding\x12\x1b\n" +
 	"\turl_param\x18\x01 \x01(\tR\burlParam\x12\x14\n" +
 	"\x05field\x18\x02 \x01(\tR\x05field\"=\n" +
@@ -414,9 +532,10 @@ const file_codevaldcross_v1_registration_proto_rawDesc = "" +
 	"\x04addr\x18\x04 \x01(\tR\x04addr\x12\x1b\n" +
 	"\tagency_id\x18\x05 \x01(\tR\bagencyId\x12:\n" +
 	"\x06routes\x18\x06 \x03(\v2\".codevaldcross.v1.RouteDeclarationR\x06routes\"\x12\n" +
-	"\x10RegisterResponse2h\n" +
+	"\x10RegisterResponse2\xc2\x01\n" +
 	"\x13OrchestratorService\x12Q\n" +
-	"\bRegister\x12!.codevaldcross.v1.RegisterRequest\x1a\".codevaldcross.v1.RegisterResponseBNZLgithub.com/aosanya/CodeValdSharedLib/gen/go/codevaldcross/v1;codevaldcrossv1b\x06proto3"
+	"\bRegister\x12!.codevaldcross.v1.RegisterRequest\x1a\".codevaldcross.v1.RegisterResponse\x12X\n" +
+	"\aPublish\x12%.codevaldcross.v1.PublishEventRequest\x1a&.codevaldcross.v1.PublishEventResponseBNZLgithub.com/aosanya/CodeValdSharedLib/gen/go/codevaldcross/v1;codevaldcrossv1b\x06proto3"
 
 var (
 	file_codevaldcross_v1_registration_proto_rawDescOnce sync.Once
@@ -430,22 +549,26 @@ func file_codevaldcross_v1_registration_proto_rawDescGZIP() []byte {
 	return file_codevaldcross_v1_registration_proto_rawDescData
 }
 
-var file_codevaldcross_v1_registration_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
+var file_codevaldcross_v1_registration_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
 var file_codevaldcross_v1_registration_proto_goTypes = []any{
-	(*PathBinding)(nil),      // 0: codevaldcross.v1.PathBinding
-	(*ConstantBinding)(nil),  // 1: codevaldcross.v1.ConstantBinding
-	(*RouteDeclaration)(nil), // 2: codevaldcross.v1.RouteDeclaration
-	(*RegisterRequest)(nil),  // 3: codevaldcross.v1.RegisterRequest
-	(*RegisterResponse)(nil), // 4: codevaldcross.v1.RegisterResponse
+	(*PublishEventRequest)(nil),  // 0: codevaldcross.v1.PublishEventRequest
+	(*PublishEventResponse)(nil), // 1: codevaldcross.v1.PublishEventResponse
+	(*PathBinding)(nil),          // 2: codevaldcross.v1.PathBinding
+	(*ConstantBinding)(nil),      // 3: codevaldcross.v1.ConstantBinding
+	(*RouteDeclaration)(nil),     // 4: codevaldcross.v1.RouteDeclaration
+	(*RegisterRequest)(nil),      // 5: codevaldcross.v1.RegisterRequest
+	(*RegisterResponse)(nil),     // 6: codevaldcross.v1.RegisterResponse
 }
 var file_codevaldcross_v1_registration_proto_depIdxs = []int32{
-	0, // 0: codevaldcross.v1.RouteDeclaration.path_bindings:type_name -> codevaldcross.v1.PathBinding
-	1, // 1: codevaldcross.v1.RouteDeclaration.constant_bindings:type_name -> codevaldcross.v1.ConstantBinding
-	2, // 2: codevaldcross.v1.RegisterRequest.routes:type_name -> codevaldcross.v1.RouteDeclaration
-	3, // 3: codevaldcross.v1.OrchestratorService.Register:input_type -> codevaldcross.v1.RegisterRequest
-	4, // 4: codevaldcross.v1.OrchestratorService.Register:output_type -> codevaldcross.v1.RegisterResponse
-	4, // [4:5] is the sub-list for method output_type
-	3, // [3:4] is the sub-list for method input_type
+	2, // 0: codevaldcross.v1.RouteDeclaration.path_bindings:type_name -> codevaldcross.v1.PathBinding
+	3, // 1: codevaldcross.v1.RouteDeclaration.constant_bindings:type_name -> codevaldcross.v1.ConstantBinding
+	4, // 2: codevaldcross.v1.RegisterRequest.routes:type_name -> codevaldcross.v1.RouteDeclaration
+	5, // 3: codevaldcross.v1.OrchestratorService.Register:input_type -> codevaldcross.v1.RegisterRequest
+	0, // 4: codevaldcross.v1.OrchestratorService.Publish:input_type -> codevaldcross.v1.PublishEventRequest
+	6, // 5: codevaldcross.v1.OrchestratorService.Register:output_type -> codevaldcross.v1.RegisterResponse
+	1, // 6: codevaldcross.v1.OrchestratorService.Publish:output_type -> codevaldcross.v1.PublishEventResponse
+	5, // [5:7] is the sub-list for method output_type
+	3, // [3:5] is the sub-list for method input_type
 	3, // [3:3] is the sub-list for extension type_name
 	3, // [3:3] is the sub-list for extension extendee
 	0, // [0:3] is the sub-list for field type_name
@@ -462,7 +585,7 @@ func file_codevaldcross_v1_registration_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_codevaldcross_v1_registration_proto_rawDesc), len(file_codevaldcross_v1_registration_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   5,
+			NumMessages:   7,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

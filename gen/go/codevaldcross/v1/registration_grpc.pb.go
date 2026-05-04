@@ -20,6 +20,7 @@ const _ = grpc.SupportPackageIsVersion9
 
 const (
 	OrchestratorService_Register_FullMethodName = "/codevaldcross.v1.OrchestratorService/Register"
+	OrchestratorService_Publish_FullMethodName  = "/codevaldcross.v1.OrchestratorService/Publish"
 )
 
 // OrchestratorServiceClient is the client API for OrchestratorService service.
@@ -34,6 +35,11 @@ type OrchestratorServiceClient interface {
 	// topic capabilities. It is safe to call repeatedly — each call acts as a
 	// liveness heartbeat. A successful response confirms the registration.
 	Register(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*RegisterResponse, error)
+	// Publish routes an event from any downstream service to CodeValdPubSub.
+	// Cross looks up the live PubSubService for the given agency and forwards the
+	// event via PubSubService.Publish. Best-effort: errors are logged but do not
+	// propagate back to the caller — the originating operation is already done.
+	Publish(ctx context.Context, in *PublishEventRequest, opts ...grpc.CallOption) (*PublishEventResponse, error)
 }
 
 type orchestratorServiceClient struct {
@@ -54,6 +60,16 @@ func (c *orchestratorServiceClient) Register(ctx context.Context, in *RegisterRe
 	return out, nil
 }
 
+func (c *orchestratorServiceClient) Publish(ctx context.Context, in *PublishEventRequest, opts ...grpc.CallOption) (*PublishEventResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(PublishEventResponse)
+	err := c.cc.Invoke(ctx, OrchestratorService_Publish_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // OrchestratorServiceServer is the server API for OrchestratorService service.
 // All implementations must embed UnimplementedOrchestratorServiceServer
 // for forward compatibility.
@@ -66,6 +82,11 @@ type OrchestratorServiceServer interface {
 	// topic capabilities. It is safe to call repeatedly — each call acts as a
 	// liveness heartbeat. A successful response confirms the registration.
 	Register(context.Context, *RegisterRequest) (*RegisterResponse, error)
+	// Publish routes an event from any downstream service to CodeValdPubSub.
+	// Cross looks up the live PubSubService for the given agency and forwards the
+	// event via PubSubService.Publish. Best-effort: errors are logged but do not
+	// propagate back to the caller — the originating operation is already done.
+	Publish(context.Context, *PublishEventRequest) (*PublishEventResponse, error)
 	mustEmbedUnimplementedOrchestratorServiceServer()
 }
 
@@ -78,6 +99,9 @@ type UnimplementedOrchestratorServiceServer struct{}
 
 func (UnimplementedOrchestratorServiceServer) Register(context.Context, *RegisterRequest) (*RegisterResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method Register not implemented")
+}
+func (UnimplementedOrchestratorServiceServer) Publish(context.Context, *PublishEventRequest) (*PublishEventResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method Publish not implemented")
 }
 func (UnimplementedOrchestratorServiceServer) mustEmbedUnimplementedOrchestratorServiceServer() {}
 func (UnimplementedOrchestratorServiceServer) testEmbeddedByValue()                             {}
@@ -118,6 +142,24 @@ func _OrchestratorService_Register_Handler(srv interface{}, ctx context.Context,
 	return interceptor(ctx, in, info, handler)
 }
 
+func _OrchestratorService_Publish_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PublishEventRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(OrchestratorServiceServer).Publish(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: OrchestratorService_Publish_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(OrchestratorServiceServer).Publish(ctx, req.(*PublishEventRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // OrchestratorService_ServiceDesc is the grpc.ServiceDesc for OrchestratorService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -128,6 +170,10 @@ var OrchestratorService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Register",
 			Handler:    _OrchestratorService_Register_Handler,
+		},
+		{
+			MethodName: "Publish",
+			Handler:    _OrchestratorService_Publish_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
