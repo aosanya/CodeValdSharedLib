@@ -101,7 +101,7 @@ git branch -d feature/SHAREDLIB-XXX_description
 
 | Task ID | Title | Status | Depends On | Notes |
 |---|---|---|---|---|
-| SHAREDLIB-018 | `EventReceiverService` proto + `ReceivedEvent` type + `ReceivedEventTypeDefinition(prefix)` helper | 📋 Not Started | ~~SHAREDLIB-011~~ ✅ | Platform-wide standard for services that consume pub/sub events pushed by Cross. Proto: `proto/codevaldshared/v1/eventreceiver.proto` — single `NotifyEvent` RPC, same path for all consumers. Go: `eventreceiver/eventreceiver.go` — `ReceivedEvent` struct + `ReceivedEventTypeDefinition(servicePrefix)` returning a `types.TypeDefinition` with collection `{prefix}_received_events`. Services call `buf generate` in SharedLib, import the generated stub, and register `EventReceiverServiceServer` on their gRPC server. See [mvp-details/event-receiver.md](mvp-details/event-receiver.md). |
+| SHAREDLIB-018 | `EventReceiverService` proto + `ReceivedEvent` type + `ReceivedEventTypeDefinition(prefix)` helper | 🚀 In Progress | ~~SHAREDLIB-011~~ ✅ | Platform-wide standard for services that consume pub/sub events pushed by Cross. Proto: `proto/codevaldshared/v1/eventreceiver.proto` — single `NotifyEvent` RPC, same path for all consumers. Go: `eventreceiver/eventreceiver.go` — `ReceivedEvent` struct + `ReceivedEventTypeDefinition(servicePrefix)` returning a `types.TypeDefinition` with collection `{prefix}_received_events`. Services call `buf generate` in SharedLib, import the generated stub, and register `EventReceiverServiceServer` on their gRPC server. See [mvp-details/event-receiver.md](mvp-details/event-receiver.md). |
 
 ---
 

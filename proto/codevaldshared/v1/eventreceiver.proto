@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+package codevaldshared.v1;
+
+option go_package = "github.com/aosanya/CodeValdSharedLib/gen/go/codevaldshared/v1;codevaldsharedv1";
+
+// EventReceiverService is implemented by every CodeVald consumer service.
+// CodeValdCross calls NotifyEvent to push a subscribed event to the service.
+// The service MUST write a ReceivedEvent record before returning success.
+service EventReceiverService {
+  // NotifyEvent delivers a single event to the implementing service.
+  // Return an error if the DB write fails — the delivery stays "pending" in PubSub.
+  rpc NotifyEvent(NotifyEventRequest) returns (NotifyEventResponse);
+}
+
+// NotifyEventRequest carries the full event pushed by Cross.
+message NotifyEventRequest {
+  // event_id is the PubSub-assigned unique identifier for the event.
+  string event_id  = 1;
+  // topic is the dotted event name (e.g. "work.task.status.changed").
+  string topic     = 2;
+  // agency_id scopes the event to a specific agency.
+  string agency_id = 3;
+  // source is the originating service name (e.g. "codevaldwork").
+  string source    = 4;
+  // payload is the JSON-encoded event body.
+  string payload   = 5;
+}
+
+// NotifyEventResponse is empty on success.
+message NotifyEventResponse {}
