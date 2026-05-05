@@ -252,6 +252,13 @@ type TypeDefinition struct {
 	// needs to address this type by a stable, opaque handle.
 	// Must be a valid UUID v4 string (e.g. "a1b2c3d4-e5f6-7890-abcd-ef1234567890").
 	RefCode string
+
+	// PublishEvents controls whether this type contributes lifecycle topics to
+	// the service's pub/sub produces list. When true, [TopicsFromSchema] emits
+	// standard events for this type (created, updated, deleted, status.changed).
+	// Independent of PathSegment — internal types with no HTTP routes may still
+	// publish events.
+	PublishEvents bool
 }
 
 // Schema is a versioned, immutable collection of [TypeDefinition]s for one

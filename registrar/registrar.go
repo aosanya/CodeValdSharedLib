@@ -7,7 +7,10 @@ package registrar
 
 import (
 	"context"
+	"crypto/sha256"
+	"fmt"
 	"log"
+	"sort"
 	"time"
 
 	crossv1 "github.com/aosanya/CodeValdSharedLib/gen/go/codevaldcross/v1"
@@ -42,6 +45,7 @@ type registrar struct {
 	agencyID     string
 	serviceName  string
 	produces     []string
+	producesHash string // SHA-256(sorted produces joined by "\n"), computed once at New()
 	consumes     []string
 	routes       []*crossv1.RouteDeclaration // converted from []types.RouteInfo at construction
 	pingInterval time.Duration
@@ -85,6 +89,7 @@ func New(
 		agencyID:     agencyID,
 		serviceName:  serviceName,
 		produces:     produces,
+		producesHash: hashTopics(produces),
 		consumes:     consumes,
 		routes:       routesToProto(routes),
 		pingInterval: pingInterval,
@@ -92,6 +97,19 @@ func New(
 		conn:         conn,
 		client:       crossv1.NewOrchestratorServiceClient(conn),
 	}, nil
+}
+
+// hashTopics returns SHA-256(sorted topics joined by "\n"), hex-encoded.
+// Sorting ensures the hash is stable regardless of AllTopics() return order.
+func hashTopics(topics []string) string {
+	sorted := make([]string, len(topics))
+	copy(sorted, topics)
+	sort.Strings(sorted)
+	h := sha256.New()
+	for _, t := range sorted {
+		fmt.Fprintln(h, t)
+	}
+	return fmt.Sprintf("%x", h.Sum(nil))
 }
 
 // routesToProto converts the public []types.RouteInfo slice into the proto
@@ -188,12 +206,13 @@ func (r *registrar) ping(ctx context.Context) {
 	defer cancel()
 
 	_, err := r.client.Register(callCtx, &crossv1.RegisterRequest{
-		ServiceName: r.serviceName,
-		Addr:        r.listenAddr,
-		AgencyId:    r.agencyID,
-		Produces:    r.produces,
-		Consumes:    r.consumes,
-		Routes:      r.routes,
+		ServiceName:  r.serviceName,
+		Addr:         r.listenAddr,
+		AgencyId:     r.agencyID,
+		Produces:     r.produces,
+		ProducesHash: r.producesHash,
+		Consumes:     r.consumes,
+		Routes:       r.routes,
 	})
 	if err != nil {
 		log.Printf("registrar[%s]: Register to CodeValdCross %s: %v", r.serviceName, r.crossAddr, err)

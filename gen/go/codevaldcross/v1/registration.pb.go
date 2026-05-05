@@ -382,7 +382,11 @@ type RegisterRequest struct {
 	// routes are the HTTP endpoints this service wants Cross to expose.
 	// Cross mounts a capability-dispatched handler for each declared route
 	// at registration time. Zero Cross source files name these patterns.
-	Routes        []*RouteDeclaration `protobuf:"bytes,6,rep,name=routes,proto3" json:"routes,omitempty"`
+	Routes []*RouteDeclaration `protobuf:"bytes,6,rep,name=routes,proto3" json:"routes,omitempty"`
+	// produces_hash is SHA-256(sorted produces joined by "\n"), hex-encoded.
+	// Cross forwards this to PubSubService.RegisterTopics alongside the full
+	// produces list so PubSub can skip DB upserts on repeated heartbeats.
+	ProducesHash  string `protobuf:"bytes,7,opt,name=produces_hash,json=producesHash,proto3" json:"produces_hash,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -459,6 +463,13 @@ func (x *RegisterRequest) GetRoutes() []*RouteDeclaration {
 	return nil
 }
 
+func (x *RegisterRequest) GetProducesHash() string {
+	if x != nil {
+		return x.ProducesHash
+	}
+	return ""
+}
+
 // RegisterResponse is intentionally empty.
 // A successful RPC response is the confirmation of availability.
 type RegisterResponse struct {
@@ -524,14 +535,15 @@ const file_codevaldcross_v1_registration_proto_rawDesc = "" +
 	"grpcMethod\x12B\n" +
 	"\rpath_bindings\x18\x05 \x03(\v2\x1d.codevaldcross.v1.PathBindingR\fpathBindings\x12N\n" +
 	"\x11constant_bindings\x18\x06 \x03(\v2!.codevaldcross.v1.ConstantBindingR\x10constantBindings\x12\x19\n" +
-	"\bis_write\x18\a \x01(\bR\aisWrite\"\xd9\x01\n" +
+	"\bis_write\x18\a \x01(\bR\aisWrite\"\xfe\x01\n" +
 	"\x0fRegisterRequest\x12!\n" +
 	"\fservice_name\x18\x01 \x01(\tR\vserviceName\x12\x1a\n" +
 	"\bproduces\x18\x02 \x03(\tR\bproduces\x12\x1a\n" +
 	"\bconsumes\x18\x03 \x03(\tR\bconsumes\x12\x12\n" +
 	"\x04addr\x18\x04 \x01(\tR\x04addr\x12\x1b\n" +
 	"\tagency_id\x18\x05 \x01(\tR\bagencyId\x12:\n" +
-	"\x06routes\x18\x06 \x03(\v2\".codevaldcross.v1.RouteDeclarationR\x06routes\"\x12\n" +
+	"\x06routes\x18\x06 \x03(\v2\".codevaldcross.v1.RouteDeclarationR\x06routes\x12#\n" +
+	"\rproduces_hash\x18\a \x01(\tR\fproducesHash\"\x12\n" +
 	"\x10RegisterResponse2\xc2\x01\n" +
 	"\x13OrchestratorService\x12Q\n" +
 	"\bRegister\x12!.codevaldcross.v1.RegisterRequest\x1a\".codevaldcross.v1.RegisterResponse\x12X\n" +
