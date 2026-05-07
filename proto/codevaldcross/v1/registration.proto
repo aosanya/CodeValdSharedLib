@@ -18,6 +18,12 @@ service OrchestratorService {
   // event via PubSubService.Publish. Best-effort: errors are logged but do not
   // propagate back to the caller — the originating operation is already done.
   rpc Publish(PublishEventRequest) returns (PublishEventResponse);
+
+  // SubscribeTopic registers a named service as a subscriber to a topic pattern
+  // in PubSub. Called by CodeValdAgency on startup and after every import or
+  // publish so that subscriptions are active independently of whether the
+  // handler service is currently running.
+  rpc SubscribeTopic(SubscribeTopicRequest) returns (SubscribeTopicResponse);
 }
 
 // PublishEventRequest carries a single event from a downstream service to Cross,
@@ -131,3 +137,14 @@ message RegisterRequest {
 // RegisterResponse is intentionally empty.
 // A successful RPC response is the confirmation of availability.
 message RegisterResponse {}
+
+// SubscribeTopicRequest asks Cross to register subscriber_service as a
+// subscriber to topic_pattern in PubSub for the given agency.
+message SubscribeTopicRequest {
+  string agency_id          = 1;
+  string subscriber_service = 2;
+  string topic_pattern      = 3;
+}
+
+// SubscribeTopicResponse is intentionally empty.
+message SubscribeTopicResponse {}

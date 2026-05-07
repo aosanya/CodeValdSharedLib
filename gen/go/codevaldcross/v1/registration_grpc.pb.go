@@ -19,8 +19,9 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	OrchestratorService_Register_FullMethodName = "/codevaldcross.v1.OrchestratorService/Register"
-	OrchestratorService_Publish_FullMethodName  = "/codevaldcross.v1.OrchestratorService/Publish"
+	OrchestratorService_Register_FullMethodName       = "/codevaldcross.v1.OrchestratorService/Register"
+	OrchestratorService_Publish_FullMethodName        = "/codevaldcross.v1.OrchestratorService/Publish"
+	OrchestratorService_SubscribeTopic_FullMethodName = "/codevaldcross.v1.OrchestratorService/SubscribeTopic"
 )
 
 // OrchestratorServiceClient is the client API for OrchestratorService service.
@@ -40,6 +41,11 @@ type OrchestratorServiceClient interface {
 	// event via PubSubService.Publish. Best-effort: errors are logged but do not
 	// propagate back to the caller — the originating operation is already done.
 	Publish(ctx context.Context, in *PublishEventRequest, opts ...grpc.CallOption) (*PublishEventResponse, error)
+	// SubscribeTopic registers a named service as a subscriber to a topic pattern
+	// in PubSub. Called by CodeValdAgency on startup and after every import or
+	// publish so that subscriptions are active independently of whether the
+	// handler service is currently running.
+	SubscribeTopic(ctx context.Context, in *SubscribeTopicRequest, opts ...grpc.CallOption) (*SubscribeTopicResponse, error)
 }
 
 type orchestratorServiceClient struct {
@@ -70,6 +76,16 @@ func (c *orchestratorServiceClient) Publish(ctx context.Context, in *PublishEven
 	return out, nil
 }
 
+func (c *orchestratorServiceClient) SubscribeTopic(ctx context.Context, in *SubscribeTopicRequest, opts ...grpc.CallOption) (*SubscribeTopicResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(SubscribeTopicResponse)
+	err := c.cc.Invoke(ctx, OrchestratorService_SubscribeTopic_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // OrchestratorServiceServer is the server API for OrchestratorService service.
 // All implementations must embed UnimplementedOrchestratorServiceServer
 // for forward compatibility.
@@ -87,6 +103,11 @@ type OrchestratorServiceServer interface {
 	// event via PubSubService.Publish. Best-effort: errors are logged but do not
 	// propagate back to the caller — the originating operation is already done.
 	Publish(context.Context, *PublishEventRequest) (*PublishEventResponse, error)
+	// SubscribeTopic registers a named service as a subscriber to a topic pattern
+	// in PubSub. Called by CodeValdAgency on startup and after every import or
+	// publish so that subscriptions are active independently of whether the
+	// handler service is currently running.
+	SubscribeTopic(context.Context, *SubscribeTopicRequest) (*SubscribeTopicResponse, error)
 	mustEmbedUnimplementedOrchestratorServiceServer()
 }
 
@@ -102,6 +123,9 @@ func (UnimplementedOrchestratorServiceServer) Register(context.Context, *Registe
 }
 func (UnimplementedOrchestratorServiceServer) Publish(context.Context, *PublishEventRequest) (*PublishEventResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method Publish not implemented")
+}
+func (UnimplementedOrchestratorServiceServer) SubscribeTopic(context.Context, *SubscribeTopicRequest) (*SubscribeTopicResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method SubscribeTopic not implemented")
 }
 func (UnimplementedOrchestratorServiceServer) mustEmbedUnimplementedOrchestratorServiceServer() {}
 func (UnimplementedOrchestratorServiceServer) testEmbeddedByValue()                             {}
@@ -160,6 +184,24 @@ func _OrchestratorService_Publish_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _OrchestratorService_SubscribeTopic_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SubscribeTopicRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(OrchestratorServiceServer).SubscribeTopic(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: OrchestratorService_SubscribeTopic_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(OrchestratorServiceServer).SubscribeTopic(ctx, req.(*SubscribeTopicRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // OrchestratorService_ServiceDesc is the grpc.ServiceDesc for OrchestratorService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -174,6 +216,10 @@ var OrchestratorService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Publish",
 			Handler:    _OrchestratorService_Publish_Handler,
+		},
+		{
+			MethodName: "SubscribeTopic",
+			Handler:    _OrchestratorService_SubscribeTopic_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

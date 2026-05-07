@@ -508,6 +508,105 @@ func (*RegisterResponse) Descriptor() ([]byte, []int) {
 	return file_codevaldcross_v1_registration_proto_rawDescGZIP(), []int{6}
 }
 
+// SubscribeTopicRequest asks Cross to register subscriber_service as a
+// subscriber to topic_pattern in PubSub for the given agency.
+type SubscribeTopicRequest struct {
+	state             protoimpl.MessageState `protogen:"open.v1"`
+	AgencyId          string                 `protobuf:"bytes,1,opt,name=agency_id,json=agencyId,proto3" json:"agency_id,omitempty"`
+	SubscriberService string                 `protobuf:"bytes,2,opt,name=subscriber_service,json=subscriberService,proto3" json:"subscriber_service,omitempty"`
+	TopicPattern      string                 `protobuf:"bytes,3,opt,name=topic_pattern,json=topicPattern,proto3" json:"topic_pattern,omitempty"`
+	unknownFields     protoimpl.UnknownFields
+	sizeCache         protoimpl.SizeCache
+}
+
+func (x *SubscribeTopicRequest) Reset() {
+	*x = SubscribeTopicRequest{}
+	mi := &file_codevaldcross_v1_registration_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SubscribeTopicRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SubscribeTopicRequest) ProtoMessage() {}
+
+func (x *SubscribeTopicRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_codevaldcross_v1_registration_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SubscribeTopicRequest.ProtoReflect.Descriptor instead.
+func (*SubscribeTopicRequest) Descriptor() ([]byte, []int) {
+	return file_codevaldcross_v1_registration_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *SubscribeTopicRequest) GetAgencyId() string {
+	if x != nil {
+		return x.AgencyId
+	}
+	return ""
+}
+
+func (x *SubscribeTopicRequest) GetSubscriberService() string {
+	if x != nil {
+		return x.SubscriberService
+	}
+	return ""
+}
+
+func (x *SubscribeTopicRequest) GetTopicPattern() string {
+	if x != nil {
+		return x.TopicPattern
+	}
+	return ""
+}
+
+// SubscribeTopicResponse is intentionally empty.
+type SubscribeTopicResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SubscribeTopicResponse) Reset() {
+	*x = SubscribeTopicResponse{}
+	mi := &file_codevaldcross_v1_registration_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SubscribeTopicResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SubscribeTopicResponse) ProtoMessage() {}
+
+func (x *SubscribeTopicResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_codevaldcross_v1_registration_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SubscribeTopicResponse.ProtoReflect.Descriptor instead.
+func (*SubscribeTopicResponse) Descriptor() ([]byte, []int) {
+	return file_codevaldcross_v1_registration_proto_rawDescGZIP(), []int{8}
+}
+
 var File_codevaldcross_v1_registration_proto protoreflect.FileDescriptor
 
 const file_codevaldcross_v1_registration_proto_rawDesc = "" +
@@ -544,10 +643,16 @@ const file_codevaldcross_v1_registration_proto_rawDesc = "" +
 	"\tagency_id\x18\x05 \x01(\tR\bagencyId\x12:\n" +
 	"\x06routes\x18\x06 \x03(\v2\".codevaldcross.v1.RouteDeclarationR\x06routes\x12#\n" +
 	"\rproduces_hash\x18\a \x01(\tR\fproducesHash\"\x12\n" +
-	"\x10RegisterResponse2\xc2\x01\n" +
+	"\x10RegisterResponse\"\x88\x01\n" +
+	"\x15SubscribeTopicRequest\x12\x1b\n" +
+	"\tagency_id\x18\x01 \x01(\tR\bagencyId\x12-\n" +
+	"\x12subscriber_service\x18\x02 \x01(\tR\x11subscriberService\x12#\n" +
+	"\rtopic_pattern\x18\x03 \x01(\tR\ftopicPattern\"\x18\n" +
+	"\x16SubscribeTopicResponse2\xa7\x02\n" +
 	"\x13OrchestratorService\x12Q\n" +
 	"\bRegister\x12!.codevaldcross.v1.RegisterRequest\x1a\".codevaldcross.v1.RegisterResponse\x12X\n" +
-	"\aPublish\x12%.codevaldcross.v1.PublishEventRequest\x1a&.codevaldcross.v1.PublishEventResponseBNZLgithub.com/aosanya/CodeValdSharedLib/gen/go/codevaldcross/v1;codevaldcrossv1b\x06proto3"
+	"\aPublish\x12%.codevaldcross.v1.PublishEventRequest\x1a&.codevaldcross.v1.PublishEventResponse\x12c\n" +
+	"\x0eSubscribeTopic\x12'.codevaldcross.v1.SubscribeTopicRequest\x1a(.codevaldcross.v1.SubscribeTopicResponseBNZLgithub.com/aosanya/CodeValdSharedLib/gen/go/codevaldcross/v1;codevaldcrossv1b\x06proto3"
 
 var (
 	file_codevaldcross_v1_registration_proto_rawDescOnce sync.Once
@@ -561,15 +666,17 @@ func file_codevaldcross_v1_registration_proto_rawDescGZIP() []byte {
 	return file_codevaldcross_v1_registration_proto_rawDescData
 }
 
-var file_codevaldcross_v1_registration_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
+var file_codevaldcross_v1_registration_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
 var file_codevaldcross_v1_registration_proto_goTypes = []any{
-	(*PublishEventRequest)(nil),  // 0: codevaldcross.v1.PublishEventRequest
-	(*PublishEventResponse)(nil), // 1: codevaldcross.v1.PublishEventResponse
-	(*PathBinding)(nil),          // 2: codevaldcross.v1.PathBinding
-	(*ConstantBinding)(nil),      // 3: codevaldcross.v1.ConstantBinding
-	(*RouteDeclaration)(nil),     // 4: codevaldcross.v1.RouteDeclaration
-	(*RegisterRequest)(nil),      // 5: codevaldcross.v1.RegisterRequest
-	(*RegisterResponse)(nil),     // 6: codevaldcross.v1.RegisterResponse
+	(*PublishEventRequest)(nil),    // 0: codevaldcross.v1.PublishEventRequest
+	(*PublishEventResponse)(nil),   // 1: codevaldcross.v1.PublishEventResponse
+	(*PathBinding)(nil),            // 2: codevaldcross.v1.PathBinding
+	(*ConstantBinding)(nil),        // 3: codevaldcross.v1.ConstantBinding
+	(*RouteDeclaration)(nil),       // 4: codevaldcross.v1.RouteDeclaration
+	(*RegisterRequest)(nil),        // 5: codevaldcross.v1.RegisterRequest
+	(*RegisterResponse)(nil),       // 6: codevaldcross.v1.RegisterResponse
+	(*SubscribeTopicRequest)(nil),  // 7: codevaldcross.v1.SubscribeTopicRequest
+	(*SubscribeTopicResponse)(nil), // 8: codevaldcross.v1.SubscribeTopicResponse
 }
 var file_codevaldcross_v1_registration_proto_depIdxs = []int32{
 	2, // 0: codevaldcross.v1.RouteDeclaration.path_bindings:type_name -> codevaldcross.v1.PathBinding
@@ -577,10 +684,12 @@ var file_codevaldcross_v1_registration_proto_depIdxs = []int32{
 	4, // 2: codevaldcross.v1.RegisterRequest.routes:type_name -> codevaldcross.v1.RouteDeclaration
 	5, // 3: codevaldcross.v1.OrchestratorService.Register:input_type -> codevaldcross.v1.RegisterRequest
 	0, // 4: codevaldcross.v1.OrchestratorService.Publish:input_type -> codevaldcross.v1.PublishEventRequest
-	6, // 5: codevaldcross.v1.OrchestratorService.Register:output_type -> codevaldcross.v1.RegisterResponse
-	1, // 6: codevaldcross.v1.OrchestratorService.Publish:output_type -> codevaldcross.v1.PublishEventResponse
-	5, // [5:7] is the sub-list for method output_type
-	3, // [3:5] is the sub-list for method input_type
+	7, // 5: codevaldcross.v1.OrchestratorService.SubscribeTopic:input_type -> codevaldcross.v1.SubscribeTopicRequest
+	6, // 6: codevaldcross.v1.OrchestratorService.Register:output_type -> codevaldcross.v1.RegisterResponse
+	1, // 7: codevaldcross.v1.OrchestratorService.Publish:output_type -> codevaldcross.v1.PublishEventResponse
+	8, // 8: codevaldcross.v1.OrchestratorService.SubscribeTopic:output_type -> codevaldcross.v1.SubscribeTopicResponse
+	6, // [6:9] is the sub-list for method output_type
+	3, // [3:6] is the sub-list for method input_type
 	3, // [3:3] is the sub-list for extension type_name
 	3, // [3:3] is the sub-list for extension extendee
 	0, // [0:3] is the sub-list for field type_name
@@ -597,7 +706,7 @@ func file_codevaldcross_v1_registration_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_codevaldcross_v1_registration_proto_rawDesc), len(file_codevaldcross_v1_registration_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   7,
+			NumMessages:   9,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

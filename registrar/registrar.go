@@ -36,6 +36,12 @@ type Registrar interface {
 	// it to CodeValdPubSub. Best-effort: errors are logged but do not propagate
 	// — the originating operation is already persisted.
 	Publish(ctx context.Context, agencyID, topic, source, payload string) error
+
+	// SubscribeTopic asks Cross to register subscriberService as a subscriber
+	// to topicPattern in PubSub for the given agency. Called by CodeValdAgency
+	// on startup and after import/publish so subscriptions exist regardless of
+	// whether the handler service is running.
+	SubscribeTopic(ctx context.Context, agencyID, subscriberService, topicPattern string) error
 }
 
 // registrar is the unexported concrete implementation of Registrar.
@@ -182,6 +188,20 @@ func (r *registrar) Close() {
 			log.Printf("registrar[%s]: close connection: %v", r.serviceName, err)
 		}
 	}
+}
+
+// SubscribeTopic implements [Registrar]. It calls OrchestratorService.SubscribeTopic
+// on CodeValdCross, which registers subscriberService as a subscriber to
+// topicPattern in PubSub for the given agency.
+func (r *registrar) SubscribeTopic(ctx context.Context, agencyID, subscriberService, topicPattern string) error {
+	callCtx, cancel := context.WithTimeout(ctx, r.pingTimeout)
+	defer cancel()
+	_, err := r.client.SubscribeTopic(callCtx, &crossv1.SubscribeTopicRequest{
+		AgencyId:          agencyID,
+		SubscriberService: subscriberService,
+		TopicPattern:      topicPattern,
+	})
+	return err
 }
 
 // Publish implements [Registrar]. It calls OrchestratorService.Publish on
