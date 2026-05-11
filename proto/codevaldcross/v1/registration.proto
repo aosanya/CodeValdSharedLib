@@ -24,6 +24,12 @@ service OrchestratorService {
   // publish so that subscriptions are active independently of whether the
   // handler service is currently running.
   rpc SubscribeTopic(SubscribeTopicRequest) returns (SubscribeTopicResponse);
+
+  // CreateOrgRole asks Cross to create a role in CodeValdOrg for the given
+  // agency. Called by CodeValdAgency on startup and after every publish or
+  // promote so that Org roles exist regardless of whether CodeValdOrg was
+  // running at import time. Idempotent — already-existing roles are skipped.
+  rpc CreateOrgRole(CreateOrgRoleRequest) returns (CreateOrgRoleResponse);
 }
 
 // PublishEventRequest carries a single event from a downstream service to Cross,
@@ -148,3 +154,20 @@ message SubscribeTopicRequest {
 
 // SubscribeTopicResponse is intentionally empty.
 message SubscribeTopicResponse {}
+
+// CreateOrgRoleRequest asks Cross to create a role in CodeValdOrg for the
+// given agency. Cross forwards the call to the live OrgService via gRPC
+// reflection so no static CodeValdOrg proto import is needed.
+message CreateOrgRoleRequest {
+  // agency_id scopes the role to the correct Org instance.
+  string agency_id    = 1;
+  // name is the machine-readable role code (e.g. "domain-expert"). Unique key.
+  string name         = 2;
+  // display_name is the human-readable label (e.g. "Domain Expert").
+  string display_name = 3;
+  // description is the role brief injected into agent system prompts.
+  string description  = 4;
+}
+
+// CreateOrgRoleResponse is intentionally empty.
+message CreateOrgRoleResponse {}

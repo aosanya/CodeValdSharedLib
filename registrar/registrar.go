@@ -42,6 +42,11 @@ type Registrar interface {
 	// on startup and after import/publish so subscriptions exist regardless of
 	// whether the handler service is running.
 	SubscribeTopic(ctx context.Context, agencyID, subscriberService, topicPattern string) error
+
+	// CreateOrgRole asks Cross to create a role in CodeValdOrg for the given
+	// agency. Idempotent — Cross skips roles that already exist. Called by
+	// CodeValdAgency on startup and after every publish or promote.
+	CreateOrgRole(ctx context.Context, agencyID, name, displayName, description string) error
 }
 
 // registrar is the unexported concrete implementation of Registrar.
@@ -200,6 +205,21 @@ func (r *registrar) SubscribeTopic(ctx context.Context, agencyID, subscriberServ
 		AgencyId:          agencyID,
 		SubscriberService: subscriberService,
 		TopicPattern:      topicPattern,
+	})
+	return err
+}
+
+// CreateOrgRole implements [Registrar]. It calls OrchestratorService.CreateOrgRole
+// on CodeValdCross, which forwards the call to CodeValdOrg. Idempotent —
+// already-existing roles are skipped by Cross.
+func (r *registrar) CreateOrgRole(ctx context.Context, agencyID, name, displayName, description string) error {
+	callCtx, cancel := context.WithTimeout(ctx, r.pingTimeout)
+	defer cancel()
+	_, err := r.client.CreateOrgRole(callCtx, &crossv1.CreateOrgRoleRequest{
+		AgencyId:    agencyID,
+		Name:        name,
+		DisplayName: displayName,
+		Description: description,
 	})
 	return err
 }

@@ -22,6 +22,7 @@ const (
 	OrchestratorService_Register_FullMethodName       = "/codevaldcross.v1.OrchestratorService/Register"
 	OrchestratorService_Publish_FullMethodName        = "/codevaldcross.v1.OrchestratorService/Publish"
 	OrchestratorService_SubscribeTopic_FullMethodName = "/codevaldcross.v1.OrchestratorService/SubscribeTopic"
+	OrchestratorService_CreateOrgRole_FullMethodName  = "/codevaldcross.v1.OrchestratorService/CreateOrgRole"
 )
 
 // OrchestratorServiceClient is the client API for OrchestratorService service.
@@ -46,6 +47,11 @@ type OrchestratorServiceClient interface {
 	// publish so that subscriptions are active independently of whether the
 	// handler service is currently running.
 	SubscribeTopic(ctx context.Context, in *SubscribeTopicRequest, opts ...grpc.CallOption) (*SubscribeTopicResponse, error)
+	// CreateOrgRole asks Cross to create a role in CodeValdOrg for the given
+	// agency. Called by CodeValdAgency on startup and after every publish or
+	// promote so that Org roles exist regardless of whether CodeValdOrg was
+	// running at import time. Idempotent — already-existing roles are skipped.
+	CreateOrgRole(ctx context.Context, in *CreateOrgRoleRequest, opts ...grpc.CallOption) (*CreateOrgRoleResponse, error)
 }
 
 type orchestratorServiceClient struct {
@@ -86,6 +92,16 @@ func (c *orchestratorServiceClient) SubscribeTopic(ctx context.Context, in *Subs
 	return out, nil
 }
 
+func (c *orchestratorServiceClient) CreateOrgRole(ctx context.Context, in *CreateOrgRoleRequest, opts ...grpc.CallOption) (*CreateOrgRoleResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CreateOrgRoleResponse)
+	err := c.cc.Invoke(ctx, OrchestratorService_CreateOrgRole_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // OrchestratorServiceServer is the server API for OrchestratorService service.
 // All implementations must embed UnimplementedOrchestratorServiceServer
 // for forward compatibility.
@@ -108,6 +124,11 @@ type OrchestratorServiceServer interface {
 	// publish so that subscriptions are active independently of whether the
 	// handler service is currently running.
 	SubscribeTopic(context.Context, *SubscribeTopicRequest) (*SubscribeTopicResponse, error)
+	// CreateOrgRole asks Cross to create a role in CodeValdOrg for the given
+	// agency. Called by CodeValdAgency on startup and after every publish or
+	// promote so that Org roles exist regardless of whether CodeValdOrg was
+	// running at import time. Idempotent — already-existing roles are skipped.
+	CreateOrgRole(context.Context, *CreateOrgRoleRequest) (*CreateOrgRoleResponse, error)
 	mustEmbedUnimplementedOrchestratorServiceServer()
 }
 
@@ -126,6 +147,9 @@ func (UnimplementedOrchestratorServiceServer) Publish(context.Context, *PublishE
 }
 func (UnimplementedOrchestratorServiceServer) SubscribeTopic(context.Context, *SubscribeTopicRequest) (*SubscribeTopicResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method SubscribeTopic not implemented")
+}
+func (UnimplementedOrchestratorServiceServer) CreateOrgRole(context.Context, *CreateOrgRoleRequest) (*CreateOrgRoleResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method CreateOrgRole not implemented")
 }
 func (UnimplementedOrchestratorServiceServer) mustEmbedUnimplementedOrchestratorServiceServer() {}
 func (UnimplementedOrchestratorServiceServer) testEmbeddedByValue()                             {}
@@ -202,6 +226,24 @@ func _OrchestratorService_SubscribeTopic_Handler(srv interface{}, ctx context.Co
 	return interceptor(ctx, in, info, handler)
 }
 
+func _OrchestratorService_CreateOrgRole_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateOrgRoleRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(OrchestratorServiceServer).CreateOrgRole(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: OrchestratorService_CreateOrgRole_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(OrchestratorServiceServer).CreateOrgRole(ctx, req.(*CreateOrgRoleRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // OrchestratorService_ServiceDesc is the grpc.ServiceDesc for OrchestratorService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -220,6 +262,10 @@ var OrchestratorService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "SubscribeTopic",
 			Handler:    _OrchestratorService_SubscribeTopic_Handler,
+		},
+		{
+			MethodName: "CreateOrgRole",
+			Handler:    _OrchestratorService_CreateOrgRole_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

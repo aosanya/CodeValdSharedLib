@@ -607,6 +607,118 @@ func (*SubscribeTopicResponse) Descriptor() ([]byte, []int) {
 	return file_codevaldcross_v1_registration_proto_rawDescGZIP(), []int{8}
 }
 
+// CreateOrgRoleRequest asks Cross to create a role in CodeValdOrg for the
+// given agency. Cross forwards the call to the live OrgService via gRPC
+// reflection so no static CodeValdOrg proto import is needed.
+type CreateOrgRoleRequest struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// agency_id scopes the role to the correct Org instance.
+	AgencyId string `protobuf:"bytes,1,opt,name=agency_id,json=agencyId,proto3" json:"agency_id,omitempty"`
+	// name is the machine-readable role code (e.g. "domain-expert"). Unique key.
+	Name string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	// display_name is the human-readable label (e.g. "Domain Expert").
+	DisplayName string `protobuf:"bytes,3,opt,name=display_name,json=displayName,proto3" json:"display_name,omitempty"`
+	// description is the role brief injected into agent system prompts.
+	Description   string `protobuf:"bytes,4,opt,name=description,proto3" json:"description,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CreateOrgRoleRequest) Reset() {
+	*x = CreateOrgRoleRequest{}
+	mi := &file_codevaldcross_v1_registration_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreateOrgRoleRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateOrgRoleRequest) ProtoMessage() {}
+
+func (x *CreateOrgRoleRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_codevaldcross_v1_registration_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateOrgRoleRequest.ProtoReflect.Descriptor instead.
+func (*CreateOrgRoleRequest) Descriptor() ([]byte, []int) {
+	return file_codevaldcross_v1_registration_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *CreateOrgRoleRequest) GetAgencyId() string {
+	if x != nil {
+		return x.AgencyId
+	}
+	return ""
+}
+
+func (x *CreateOrgRoleRequest) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *CreateOrgRoleRequest) GetDisplayName() string {
+	if x != nil {
+		return x.DisplayName
+	}
+	return ""
+}
+
+func (x *CreateOrgRoleRequest) GetDescription() string {
+	if x != nil {
+		return x.Description
+	}
+	return ""
+}
+
+// CreateOrgRoleResponse is intentionally empty.
+type CreateOrgRoleResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CreateOrgRoleResponse) Reset() {
+	*x = CreateOrgRoleResponse{}
+	mi := &file_codevaldcross_v1_registration_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreateOrgRoleResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateOrgRoleResponse) ProtoMessage() {}
+
+func (x *CreateOrgRoleResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_codevaldcross_v1_registration_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateOrgRoleResponse.ProtoReflect.Descriptor instead.
+func (*CreateOrgRoleResponse) Descriptor() ([]byte, []int) {
+	return file_codevaldcross_v1_registration_proto_rawDescGZIP(), []int{10}
+}
+
 var File_codevaldcross_v1_registration_proto protoreflect.FileDescriptor
 
 const file_codevaldcross_v1_registration_proto_rawDesc = "" +
@@ -648,11 +760,18 @@ const file_codevaldcross_v1_registration_proto_rawDesc = "" +
 	"\tagency_id\x18\x01 \x01(\tR\bagencyId\x12-\n" +
 	"\x12subscriber_service\x18\x02 \x01(\tR\x11subscriberService\x12#\n" +
 	"\rtopic_pattern\x18\x03 \x01(\tR\ftopicPattern\"\x18\n" +
-	"\x16SubscribeTopicResponse2\xa7\x02\n" +
+	"\x16SubscribeTopicResponse\"\x8c\x01\n" +
+	"\x14CreateOrgRoleRequest\x12\x1b\n" +
+	"\tagency_id\x18\x01 \x01(\tR\bagencyId\x12\x12\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\x12!\n" +
+	"\fdisplay_name\x18\x03 \x01(\tR\vdisplayName\x12 \n" +
+	"\vdescription\x18\x04 \x01(\tR\vdescription\"\x17\n" +
+	"\x15CreateOrgRoleResponse2\x89\x03\n" +
 	"\x13OrchestratorService\x12Q\n" +
 	"\bRegister\x12!.codevaldcross.v1.RegisterRequest\x1a\".codevaldcross.v1.RegisterResponse\x12X\n" +
 	"\aPublish\x12%.codevaldcross.v1.PublishEventRequest\x1a&.codevaldcross.v1.PublishEventResponse\x12c\n" +
-	"\x0eSubscribeTopic\x12'.codevaldcross.v1.SubscribeTopicRequest\x1a(.codevaldcross.v1.SubscribeTopicResponseBNZLgithub.com/aosanya/CodeValdSharedLib/gen/go/codevaldcross/v1;codevaldcrossv1b\x06proto3"
+	"\x0eSubscribeTopic\x12'.codevaldcross.v1.SubscribeTopicRequest\x1a(.codevaldcross.v1.SubscribeTopicResponse\x12`\n" +
+	"\rCreateOrgRole\x12&.codevaldcross.v1.CreateOrgRoleRequest\x1a'.codevaldcross.v1.CreateOrgRoleResponseBNZLgithub.com/aosanya/CodeValdSharedLib/gen/go/codevaldcross/v1;codevaldcrossv1b\x06proto3"
 
 var (
 	file_codevaldcross_v1_registration_proto_rawDescOnce sync.Once
@@ -666,7 +785,7 @@ func file_codevaldcross_v1_registration_proto_rawDescGZIP() []byte {
 	return file_codevaldcross_v1_registration_proto_rawDescData
 }
 
-var file_codevaldcross_v1_registration_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
+var file_codevaldcross_v1_registration_proto_msgTypes = make([]protoimpl.MessageInfo, 11)
 var file_codevaldcross_v1_registration_proto_goTypes = []any{
 	(*PublishEventRequest)(nil),    // 0: codevaldcross.v1.PublishEventRequest
 	(*PublishEventResponse)(nil),   // 1: codevaldcross.v1.PublishEventResponse
@@ -677,22 +796,26 @@ var file_codevaldcross_v1_registration_proto_goTypes = []any{
 	(*RegisterResponse)(nil),       // 6: codevaldcross.v1.RegisterResponse
 	(*SubscribeTopicRequest)(nil),  // 7: codevaldcross.v1.SubscribeTopicRequest
 	(*SubscribeTopicResponse)(nil), // 8: codevaldcross.v1.SubscribeTopicResponse
+	(*CreateOrgRoleRequest)(nil),   // 9: codevaldcross.v1.CreateOrgRoleRequest
+	(*CreateOrgRoleResponse)(nil),  // 10: codevaldcross.v1.CreateOrgRoleResponse
 }
 var file_codevaldcross_v1_registration_proto_depIdxs = []int32{
-	2, // 0: codevaldcross.v1.RouteDeclaration.path_bindings:type_name -> codevaldcross.v1.PathBinding
-	3, // 1: codevaldcross.v1.RouteDeclaration.constant_bindings:type_name -> codevaldcross.v1.ConstantBinding
-	4, // 2: codevaldcross.v1.RegisterRequest.routes:type_name -> codevaldcross.v1.RouteDeclaration
-	5, // 3: codevaldcross.v1.OrchestratorService.Register:input_type -> codevaldcross.v1.RegisterRequest
-	0, // 4: codevaldcross.v1.OrchestratorService.Publish:input_type -> codevaldcross.v1.PublishEventRequest
-	7, // 5: codevaldcross.v1.OrchestratorService.SubscribeTopic:input_type -> codevaldcross.v1.SubscribeTopicRequest
-	6, // 6: codevaldcross.v1.OrchestratorService.Register:output_type -> codevaldcross.v1.RegisterResponse
-	1, // 7: codevaldcross.v1.OrchestratorService.Publish:output_type -> codevaldcross.v1.PublishEventResponse
-	8, // 8: codevaldcross.v1.OrchestratorService.SubscribeTopic:output_type -> codevaldcross.v1.SubscribeTopicResponse
-	6, // [6:9] is the sub-list for method output_type
-	3, // [3:6] is the sub-list for method input_type
-	3, // [3:3] is the sub-list for extension type_name
-	3, // [3:3] is the sub-list for extension extendee
-	0, // [0:3] is the sub-list for field type_name
+	2,  // 0: codevaldcross.v1.RouteDeclaration.path_bindings:type_name -> codevaldcross.v1.PathBinding
+	3,  // 1: codevaldcross.v1.RouteDeclaration.constant_bindings:type_name -> codevaldcross.v1.ConstantBinding
+	4,  // 2: codevaldcross.v1.RegisterRequest.routes:type_name -> codevaldcross.v1.RouteDeclaration
+	5,  // 3: codevaldcross.v1.OrchestratorService.Register:input_type -> codevaldcross.v1.RegisterRequest
+	0,  // 4: codevaldcross.v1.OrchestratorService.Publish:input_type -> codevaldcross.v1.PublishEventRequest
+	7,  // 5: codevaldcross.v1.OrchestratorService.SubscribeTopic:input_type -> codevaldcross.v1.SubscribeTopicRequest
+	9,  // 6: codevaldcross.v1.OrchestratorService.CreateOrgRole:input_type -> codevaldcross.v1.CreateOrgRoleRequest
+	6,  // 7: codevaldcross.v1.OrchestratorService.Register:output_type -> codevaldcross.v1.RegisterResponse
+	1,  // 8: codevaldcross.v1.OrchestratorService.Publish:output_type -> codevaldcross.v1.PublishEventResponse
+	8,  // 9: codevaldcross.v1.OrchestratorService.SubscribeTopic:output_type -> codevaldcross.v1.SubscribeTopicResponse
+	10, // 10: codevaldcross.v1.OrchestratorService.CreateOrgRole:output_type -> codevaldcross.v1.CreateOrgRoleResponse
+	7,  // [7:11] is the sub-list for method output_type
+	3,  // [3:7] is the sub-list for method input_type
+	3,  // [3:3] is the sub-list for extension type_name
+	3,  // [3:3] is the sub-list for extension extendee
+	0,  // [0:3] is the sub-list for field type_name
 }
 
 func init() { file_codevaldcross_v1_registration_proto_init() }
@@ -706,7 +829,7 @@ func file_codevaldcross_v1_registration_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_codevaldcross_v1_registration_proto_rawDesc), len(file_codevaldcross_v1_registration_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   9,
+			NumMessages:   11,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
