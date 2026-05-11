@@ -181,30 +181,30 @@ type SchemaManager interface {
 // never hard-deleted in v1.
 type Entity struct {
 	// ID is the unique identifier for this entity (UUID).
-	ID string
+	ID string `json:"id"`
 
 	// AgencyID is the agency this entity belongs to.
-	AgencyID string
+	AgencyID string `json:"agencyId"`
 
 	// TypeID matches TypeDefinition.Name in the agency's current schema
 	// (e.g. "Pump", "Channel").
-	TypeID string
+	TypeID string `json:"typeId"`
 
 	// Properties holds the current state values keyed by property name.
 	// No schema validation is applied in v1.
-	Properties map[string]any
+	Properties map[string]any `json:"properties,omitempty"`
 
 	// CreatedAt is the time this entity was created.
-	CreatedAt time.Time
+	CreatedAt time.Time `json:"createdAt"`
 
 	// UpdatedAt is the time this entity was last updated.
-	UpdatedAt time.Time
+	UpdatedAt time.Time `json:"updatedAt"`
 
 	// Deleted is true once DeleteEntity has been called.
-	Deleted bool
+	Deleted bool `json:"deleted,omitempty"`
 
 	// DeletedAt is set when DeleteEntity is called; nil until then.
-	DeletedAt *time.Time
+	DeletedAt *time.Time `json:"deletedAt,omitempty"`
 }
 
 // CreateEntityRequest is the input for creating a new entity.
@@ -267,26 +267,26 @@ type EntityFilter struct {
 // documents.
 type Relationship struct {
 	// ID is the unique identifier for this relationship (UUID).
-	ID string
+	ID string `json:"id"`
 
 	// AgencyID is the agency this relationship belongs to.
-	AgencyID string
+	AgencyID string `json:"agencyId"`
 
 	// Name is the semantic label for this edge (e.g. "connects_to",
 	// "reports_to").
-	Name string
+	Name string `json:"name"`
 
 	// FromID is the source entity ID.
-	FromID string
+	FromID string `json:"fromId"`
 
 	// ToID is the target entity ID.
-	ToID string
+	ToID string `json:"toId"`
 
 	// Properties are optional metadata carried on the edge.
-	Properties map[string]any
+	Properties map[string]any `json:"properties,omitempty"`
 
 	// CreatedAt is the time this relationship was created.
-	CreatedAt time.Time
+	CreatedAt time.Time `json:"createdAt"`
 }
 
 // CreateRelationshipRequest is the input for creating a directed graph edge
