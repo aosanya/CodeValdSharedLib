@@ -138,6 +138,12 @@ message RegisterRequest {
   // Cross forwards this to PubSubService.RegisterTopics alongside the full
   // produces list so PubSub can skip DB upserts on repeated heartbeats.
   string produces_hash = 7;
+
+  // topic_schemas maps each consumed topic to a human-readable description of
+  // its expected payload fields. Injected into the LLM system prompt so agents
+  // know exactly what to include when emitting an action for that topic.
+  // Example: {"git.branch.create": "{repository: string, name: string, from_branch?: string}"}
+  map<string, string> topic_schemas = 8;
 }
 
 // RegisterResponse is intentionally empty.

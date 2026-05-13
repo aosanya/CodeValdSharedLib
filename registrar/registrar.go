@@ -6,10 +6,13 @@
 package registrar
 
 import (
+	"bytes"
 	"context"
 	"crypto/sha256"
+	"encoding/json"
 	"fmt"
 	"log"
+	"net/http"
 	"sort"
 	"time"
 
@@ -43,6 +46,18 @@ type Registrar interface {
 	// whether the handler service is running.
 	SubscribeTopic(ctx context.Context, agencyID, subscriberService, topicPattern string) error
 
+	// SetCrossHTTPAddr configures the Cross HTTP base URL used by
+	// RegisterTopicSchemas. Call this after New() for services that want to
+	// self-describe their topic payloads. Empty string is a safe no-op.
+	SetCrossHTTPAddr(addr string)
+
+	// RegisterTopicSchemas sends a PATCH to CodeValdCross to store payload-schema
+	// descriptions for the service's consumed topics. Called once after the initial
+	// Register ping so the LLM action catalogue includes field-level guidance.
+	// schemas maps topic name → human-readable payload description.
+	// No-op when CrossHTTPAddr has not been set.
+	RegisterTopicSchemas(ctx context.Context, agencyID string, schemas map[string]string) error
+
 	// CreateOrgRole asks Cross to create a role in CodeValdOrg for the given
 	// agency. Idempotent — Cross skips roles that already exist. Called by
 	// CodeValdAgency on startup and after every publish or promote.
@@ -51,18 +66,19 @@ type Registrar interface {
 
 // registrar is the unexported concrete implementation of Registrar.
 type registrar struct {
-	crossAddr    string
-	listenAddr   string
-	agencyID     string
-	serviceName  string
-	produces     []string
-	producesHash string // SHA-256(sorted produces joined by "\n"), computed once at New()
-	consumes     []string
-	routes       []*crossv1.RouteDeclaration // converted from []types.RouteInfo at construction
-	pingInterval time.Duration
-	pingTimeout  time.Duration
-	conn         *grpc.ClientConn
-	client       crossv1.OrchestratorServiceClient
+	crossAddr     string
+	crossHTTPAddr string // optional; enables RegisterTopicSchemas when set
+	listenAddr    string
+	agencyID      string
+	serviceName   string
+	produces      []string
+	producesHash  string // SHA-256(sorted produces joined by "\n"), computed once at New()
+	consumes      []string
+	routes        []*crossv1.RouteDeclaration // converted from []types.RouteInfo at construction
+	pingInterval  time.Duration
+	pingTimeout   time.Duration
+	conn          *grpc.ClientConn
+	client        crossv1.OrchestratorServiceClient
 }
 
 // New constructs a Registrar that heartbeats to the CodeValdCross gRPC address
@@ -259,4 +275,38 @@ func (r *registrar) ping(ctx context.Context) {
 		return
 	}
 	log.Printf("registrar[%s]: registered with CodeValdCross at %s", r.serviceName, r.crossAddr)
+}
+
+// SetCrossHTTPAddr configures the Cross HTTP base URL for RegisterTopicSchemas.
+func (r *registrar) SetCrossHTTPAddr(addr string) {
+	r.crossHTTPAddr = addr
+}
+
+// RegisterTopicSchemas PATCHes the topic-schema map to CodeValdCross so the
+// LLM action catalogue includes payload field descriptions. No-op when
+// crossHTTPAddr is empty.
+func (r *registrar) RegisterTopicSchemas(ctx context.Context, agencyID string, schemas map[string]string) error {
+	if r.crossHTTPAddr == "" || len(schemas) == 0 {
+		return nil
+	}
+	body, err := json.Marshal(schemas)
+	if err != nil {
+		return fmt.Errorf("RegisterTopicSchemas: marshal: %w", err)
+	}
+	url := fmt.Sprintf("%s/services/%s/%s/topic-schemas", r.crossHTTPAddr, agencyID, r.serviceName)
+	req, err := http.NewRequestWithContext(ctx, http.MethodPatch, url, bytes.NewReader(body))
+	if err != nil {
+		return fmt.Errorf("RegisterTopicSchemas: build request: %w", err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return fmt.Errorf("RegisterTopicSchemas: %w", err)
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("RegisterTopicSchemas: unexpected status %d", resp.StatusCode)
+	}
+	log.Printf("registrar[%s]: registered topic schemas with CodeValdCross", r.serviceName)
+	return nil
 }

@@ -82,6 +82,11 @@ type ServiceRegistration struct {
 	// Routes are the HTTP endpoints this service declared at registration time.
 	// Always non-nil after a registration — empty slice when no routes were declared.
 	Routes []RouteInfo `json:"routes"`
+	// TopicSchemas maps each consumed topic to a human-readable description of
+	// its expected payload fields. Injected by CodeValdAI into the LLM system
+	// prompt so agents know exactly what to include when emitting an action.
+	// Example: {"git.branch.create": "{repository: string, name: string, from_branch?: string}"}
+	TopicSchemas map[string]string `json:"topic_schemas,omitempty"`
 	// LastPing is the UTC timestamp of the most recent Register or Ping call
 	// received from this service.
 	LastPing time.Time
