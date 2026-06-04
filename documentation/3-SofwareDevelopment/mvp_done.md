@@ -47,3 +47,4 @@ Tasks that have been merged to `master` are moved here from `mvp.md`.
 | Task ID | Title | Merged | Notes |
 |---|---|---|---|
 | FEAT-20260603-001 | Create `eventbus/domains.go` — `Domain*` prefix constants | 2026-06-04 | New file `eventbus/domains.go`: 9 `Domain*` constants (`DomainWork`, `DomainGit`, `DomainAI`, `DomainComm`, `DomainFunctions`, `DomainAgency`, `DomainOrg`, `DomainCross`, `DomainPubSub`). Pure addition; all existing tests green. Unblocks FEAT-20260603-002 migration sweep. |
+| FEAT-20260603-002 | Migrate all service `Topic*` constants to `eventbus.Domain*` | 2026-06-04 | Mechanical sweep across CodeValdWork (29 constants), CodeValdGit (15), CodeValdComm (7), CodeValdFunctions (2), CodeValdCross (16). CodeValdAI deferred (busy with FEAT-20260604-001 at time of migration). All 5 services build clean; all tests pass with `-race`. BUG-20260603-002 (AI inline strings) now unblocked. |
