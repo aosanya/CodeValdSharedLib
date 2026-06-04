@@ -109,7 +109,7 @@ git branch -d feature/SHAREDLIB-XXX_description
 
 | Task ID | Title | Status | Depends On | Notes |
 |---------|-------|--------|------------|-------|
-| FEAT-20260603-001 | Create `eventbus/domains.go` — `Domain*` prefix constants | 📋 Not Started | — | New file: `DomainWork`, `DomainGit`, `DomainAI`, `DomainComm`, `DomainFunctions`, `DomainAgency`, `DomainOrg`, `DomainCross`, `DomainPubSub`. Pure addition, no breaking changes. Detail: [mvp-details/FEAT-20260603-001_eventbus-domain-constants.md](mvp-details/FEAT-20260603-001_eventbus-domain-constants.md) |
+| FEAT-20260603-001 | Create `eventbus/domains.go` — `Domain*` prefix constants | ✅ Done | — | New file: `DomainWork`, `DomainGit`, `DomainAI`, `DomainComm`, `DomainFunctions`, `DomainAgency`, `DomainOrg`, `DomainCross`, `DomainPubSub`. Pure addition, no breaking changes. Detail: [mvp-details/FEAT-20260603-001_eventbus-domain-constants.md](mvp-details/FEAT-20260603-001_eventbus-domain-constants.md) |
 | FEAT-20260603-002 | Migrate all service `Topic*` constants to `eventbus.Domain*` | 📋 Not Started | FEAT-20260603-001 | Mechanical sweep across CodeValdWork, CodeValdGit, CodeValdAI, CodeValdComm, CodeValdFunctions, CodeValdCross (~47 constants). Also enables fix of [BUG-20260603-002 (AI)](../../../CodeValdAI/documentation/3-SofwareDevelopment/bug-details/BUG-20260603-002_inline-hardcoded-git-topic-strings.md). Detail: [mvp-details/FEAT-20260603-002_migrate-topic-constants-to-sharedlib.md](mvp-details/FEAT-20260603-002_migrate-topic-constants-to-sharedlib.md) |
 
 ---

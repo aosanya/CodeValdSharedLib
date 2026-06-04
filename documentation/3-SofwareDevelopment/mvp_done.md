@@ -41,3 +41,9 @@ Tasks that have been merged to `master` are moved here from `mvp.md`.
 | Task ID | Title | Merged | Notes |
 |---|---|---|---|
 | SHAREDLIB-018 | `EventReceiverService` proto + `ReceivedEvent` type + `ReceivedEventTypeDefinition(prefix)` helper | 2026-05-04 | `proto/codevaldshared/v1/eventreceiver.proto`: single `NotifyEvent` RPC; `buf generate` → `gen/go/codevaldshared/v1/`; `eventreceiver/eventreceiver.go`: `ReceivedEvent` struct + `ReceivedEventTypeDefinition(prefix)` returning `TypeDefinition` with `{prefix}_received_events` collection, `PathSegment="received-events"`, `EntityIDParam="receivedEventId"`, `Immutable=true`; 5 unit tests (`-race`) all pass. |
+
+## P5: Event Bus Domain Standards
+
+| Task ID | Title | Merged | Notes |
+|---|---|---|---|
+| FEAT-20260603-001 | Create `eventbus/domains.go` — `Domain*` prefix constants | 2026-06-04 | New file `eventbus/domains.go`: 9 `Domain*` constants (`DomainWork`, `DomainGit`, `DomainAI`, `DomainComm`, `DomainFunctions`, `DomainAgency`, `DomainOrg`, `DomainCross`, `DomainPubSub`). Pure addition; all existing tests green. Unblocks FEAT-20260603-002 migration sweep. |
