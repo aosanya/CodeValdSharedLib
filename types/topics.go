@@ -15,6 +15,10 @@ import "strings"
 // "work.task.created", "work.task.update.status". Topic order follows schema
 // definition order; properties follow their declaration order within each type.
 //
+// When servicePrefix is empty the leading "{prefix}." segment is omitted so
+// callers participating in the intent-keyed naming rename (BUG-20260609-001)
+// can pass "" without producing a leading dot.
+//
 // Call this from a service's AllTopics function so the registrar's produces
 // list stays in sync with the schema without manual maintenance.
 func TopicsFromSchema(servicePrefix string, schema Schema) []string {
@@ -23,7 +27,10 @@ func TopicsFromSchema(servicePrefix string, schema Schema) []string {
 		if !td.PublishEvents {
 			continue
 		}
-		base := servicePrefix + "." + strings.ToLower(td.Name) + "."
+		base := strings.ToLower(td.Name) + "."
+		if servicePrefix != "" {
+			base = servicePrefix + "." + base
+		}
 		topics = append(topics, base+"created")
 		if !td.Immutable {
 			topics = append(topics, base+"updated")
