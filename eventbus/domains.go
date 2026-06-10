@@ -12,7 +12,7 @@ package eventbus
 const (
 	DomainWork      = ""
 	DomainGit       = "git."
-	DomainAI        = "ai."
+	DomainAI        = ""
 	DomainComm      = "comm."
 	DomainFunctions = "functions."
 	DomainAgency    = "agency."
